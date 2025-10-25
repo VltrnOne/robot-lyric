@@ -1,0 +1,31 @@
+{
+  "name": "intheair-game",
+  "version": "1.0.0",
+  "description": "A Flappy Bird-style game built with HTML5 Canvas and JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "dev": "npx http-server -p 3000 -o",
+    "build": "echo 'No build process needed - pure HTML5/JS game'",
+    "deploy": "echo 'Ready for deployment to any web hosting service'"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "canvas",
+    "javascript",
+    "flappy-bird",
+    "plane",
+    "arcade"
+  ],
+  "author": "InTheAir Game",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/intheair-game.git"
+  },
+  "homepage": "https://yourusername.github.io/intheair-game"
+}

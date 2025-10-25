@@ -1,0 +1,105 @@
+# Unity specific
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Unity generated files
+*.tmp
+*.unity.meta
+*.unity.meta.meta
+*.meta
+*.prefab.meta
+*.asset.meta
+*.cs.meta
+*.js.meta
+*.boo.meta
+*.cginc.meta
+*.shader.meta
+*.compute.meta
+*.asmdef.meta
+*.asmref.meta
+*.asmref.meta.meta
+*.asmdef.meta.meta
+*.cginc.meta.meta
+*.compute.meta.meta
+*.shader.meta.meta
+*.boo.meta.meta
+*.js.meta.meta
+*.cs.meta.meta
+*.asset.meta.meta
+*.prefab.meta.meta
+*.unity.meta.meta
+
+# Unity packages
+[Pp]ackages/
+manifest.json
+packages-lock.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if using any build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+web-build/
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Temporary folders
+tmp/
+temp/
