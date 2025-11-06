@@ -22,7 +22,7 @@ This happens because:
 2. Select **"CNAME"** tab
 3. Fill in:
    - **Name**: `www` (just `www`, not the full domain)
-   - **Resolves to**: `VltrnOne.github.io` (note: capital **V**)
+   - **Resolves to**: `vltrnone.github.io` (lowercase - DNS is case-insensitive, but use lowercase to match existing)
    - **TTL**: `24 hours`
 4. Click **"CREATE"**
 

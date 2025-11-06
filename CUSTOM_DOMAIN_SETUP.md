@@ -30,7 +30,7 @@ If you want the game at the root domain `vltrngames.com`:
 3. **Also add CNAME record:**
    - **Type**: `CNAME`
    - **Name**: `www`
-   - **Value**: `VltrnOne.github.io`
+   - **Value**: `vltrnone.github.io` (lowercase - DNS is case-insensitive)
    - **TTL**: 3600
 
 ### Option 2: Subdomain (robot-lyric.vltrngames.com)
@@ -41,7 +41,7 @@ If you want the game at a subdomain:
 2. **Add CNAME record:**
    - **Type**: `CNAME`
    - **Name**: `robot-lyric` (or your preferred subdomain)
-   - **Value**: `VltrnOne.github.io`
+   - **Value**: `vltrnone.github.io` (lowercase - DNS is case-insensitive)
    - **TTL**: 3600
 
 3. **Update CNAME file** to match:

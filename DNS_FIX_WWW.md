@@ -25,7 +25,7 @@ GitHub Pages is showing a warning:
 2. Select the **"CNAME"** tab
 3. Fill in the form:
    - **Name**: `www` (just `www`, not `www.vltrngames.com`)
-   - **Resolves to**: `VltrnOne.github.io` (note: capital **V** in VltrnOne)
+   - **Resolves to**: `vltrnone.github.io` (lowercase - DNS is case-insensitive, but use lowercase to match existing)
    - **TTL**: `24 hours` (or your preference)
 4. Click **"CREATE"**
 
