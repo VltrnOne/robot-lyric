@@ -117,17 +117,17 @@
 
         #score {
             position: absolute;
-            bottom: 20px;
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
             color: white;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             z-index: 10;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
             border: 2px solid #F1C40F;
         }
         
@@ -416,7 +416,7 @@
             font-size: 14px;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            z-index: 15;
+            z-index: 16;
             background: rgba(0,0,0,0.3);
             padding: 5px 10px;
             border-radius: 5px;
@@ -425,7 +425,7 @@
         
         #achievementBank {
             position: absolute;
-            top: 230px;
+            top: 225px;
             right: 20px;
             width: 180px;
             max-height: 120px;
@@ -647,7 +647,7 @@
                 <div id="achievementBankList"></div>
             </div>
             <button id="settingsBtn">⚙️ Settings</button>
-            <button id="soundToggle" style="position: absolute; top: 20px; right: 120px; padding: 5px 10px; background: #3498DB; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 20; pointer-events: auto;">🔊 Sound</button>
+            <button id="soundToggle" style="position: absolute; top: 60px; right: 20px; padding: 8px 12px; background: #3498DB; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 20; pointer-events: auto; font-size: 14px;">🔊 Sound</button>
             <div id="instructions">Click or Press SPACE to Fly!<br><br>🪙 Coins = 3s Invincibility (1 per coin)<br>⭐ Super Coins = 8 Bonus Coins!<br>🚀 Rockets = Slow Motion + Full Control<br>⚡ Rocket Boosts = Speed Boost (Press B to activate)<br><br>Player 1: SPACE to jump, WASD for rockets, B for boost<br>Player 2: Press P to activate (unlocks after first coin)<br>Player 2: Arrow Keys + ENTER to fire<br>Press R to Restart</div>
             <div id="score">Score: 0</div>
             
@@ -669,8 +669,10 @@
                 <h2>Enter Your Name</h2>
                 <input type="text" id="playerNameInputMain" placeholder="Enter your name" maxlength="15" autofocus>
                 <br>
-                <button id="startGameBtn" disabled>Start Game</button>
-                <button id="settingsBtnMain" style="background: #F39C12; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer;">⚙️ Settings</button>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%;">
+                    <button id="startGameBtn" disabled style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #27AE60; color: white; border: none;">Start Game</button>
+                    <button id="settingsBtnMain" style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #F39C12; color: white; border: none;">⚙️ Settings</button>
+                </div>
                 <div style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
                     💡 Your name will be saved globally and shown on the leaderboard
                 </div>
