@@ -2848,7 +2848,17 @@
                         opt.classList.add('selected');
                     }
                 });
-                this.settingsMenu.style.display = 'block';
+                if (this.settingsMenu) {
+                    this.settingsMenu.style.display = 'block';
+                }
+                // Close other menus
+                if (this.leaderboard) {
+                    this.leaderboard.style.display = 'none';
+                }
+                if (this.multiplayerMenuElement) {
+                    this.multiplayerMenuElement.style.display = 'none';
+                }
+                // Don't change game state - just show settings
             }
 
             closeSettings() {
