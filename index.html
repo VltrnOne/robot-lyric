@@ -50,18 +50,18 @@
         /* Mobile Touch Controls */
         #mobileControls {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
             display: none;
-            gap: 8px;
+            gap: 5px;
             z-index: 20;
             pointer-events: auto;
         }
 
         @media (max-width: 768px) {
             #mobileControls {
-                display: flex;
+                display: none; /* Will be shown/hidden by JavaScript based on gameState */
                 flex-direction: column;
                 align-items: center;
             }
@@ -99,10 +99,10 @@
             }
             
             .mobile-btn {
-                padding: 10px 15px;
-                font-size: 16px;
-                min-width: 50px;
-                min-height: 50px;
+                padding: 8px 12px;
+                font-size: 14px;
+                min-width: 45px;
+                min-height: 45px;
             }
         }
 
@@ -156,7 +156,7 @@
 
         #score {
             position: absolute;
-            bottom: 70px;
+            bottom: 180px;
             left: 50%;
             transform: translateX(-50%);
             color: white;
@@ -168,6 +168,14 @@
             padding: 8px 16px;
             border-radius: 8px;
             border: 2px solid #F1C40F;
+        }
+        
+        @media (max-width: 768px) {
+            #score {
+                bottom: 200px;
+                font-size: 20px;
+                padding: 6px 12px;
+            }
         }
         
         #achievementBadges {
@@ -810,6 +818,7 @@
                 this.finalScoreElement = document.getElementById('finalScore');
                 this.restartBtn = document.getElementById('restartBtn');
                 this.multiplayerFromGameOverBtn = document.getElementById('multiplayerFromGameOver');
+                this.mobileControls = document.getElementById('mobileControls');
                 
                 // Settings elements
                 this.settingsBtn = document.getElementById('settingsBtn');
@@ -1080,15 +1089,24 @@
                 this.updateUI();
                 // Add window resize and orientation change handlers
                 window.addEventListener('resize', () => {
-                    setTimeout(() => this.handleResize(), 100);
+                    setTimeout(() => {
+                        this.handleResize();
+                        this.updateMobileControlsVisibility();
+                    }, 100);
                 });
                 
                 window.addEventListener('orientationchange', () => {
-                    setTimeout(() => this.handleResize(), 200);
+                    setTimeout(() => {
+                        this.handleResize();
+                        this.updateMobileControlsVisibility();
+                    }, 200);
                 });
                 
                 // Initial resize
-                setTimeout(() => this.handleResize(), 100);
+                setTimeout(() => {
+                    this.handleResize();
+                    this.updateMobileControlsVisibility();
+                }, 100);
                 
                 if (this.gameState === 'nameInput') {
                     this.showNameInputScreen();
@@ -1696,8 +1714,20 @@
                     if (this.nameInputScreen) {
                         this.nameInputScreen.style.display = 'none';
                     }
+                    // Show mobile controls only when playing
+                    this.updateMobileControlsVisibility();
                 } catch (error) {
                     console.error('Error in startGame:', error);
+                }
+            }
+            
+            updateMobileControlsVisibility() {
+                if (this.mobileControls) {
+                    if (this.gameState === 'playing' && window.innerWidth <= 768) {
+                        this.mobileControls.style.display = 'flex';
+                    } else {
+                        this.mobileControls.style.display = 'none';
+                    }
                 }
             }
 
@@ -1746,6 +1776,8 @@
 
             restart() {
                 this.gameState = 'nameInput';
+                // Hide mobile controls when restarting
+                this.updateMobileControlsVisibility();
                 this.score = 0;
                 this.level = 1;
                 this.obstacleSpeed = this.baseObstacleSpeed;
