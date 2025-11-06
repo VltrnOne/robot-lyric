@@ -1897,14 +1897,10 @@
                 }
 
                 // Boss mode completely disabled - no bosses will spawn
-                // Clear any existing bosses and projectiles
-                if (this.currentBoss) {
-                    this.currentBoss = null;
-                    this.bossActive = false;
-                }
-                if (this.bosses && this.bosses.length > 0) {
-                    this.bosses = [];
-                }
+                // AGGRESSIVELY clear any existing bosses and projectiles EVERY FRAME
+                this.currentBoss = null;
+                this.bossActive = false;
+                this.bosses = [];
                 
                 // AGGRESSIVELY clear all missiles EVERY FRAME to prevent red dots
                 this.missiles = [];
