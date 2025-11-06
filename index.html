@@ -981,6 +981,11 @@
                 this.bossPhase = 0;
                 this.bossAttackPattern = 0;
                 this.bossAttackCooldown = 0;
+                this.lastProjectileHitTime = 0;
+                this.projectileHitCooldown = 300; // 300ms cooldown between projectile hits (prevents rapid-fire)
+                this.lastBossHitTime = 0;
+                this.bossHitCooldown = 500; // 500ms cooldown between boss hits
+                this.hitProjectiles = new Set(); // Track which projectiles have already hit
 
                 // Level editor system
                 this.levelEditorActive = false;
