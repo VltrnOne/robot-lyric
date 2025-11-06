@@ -700,11 +700,11 @@
                         <input type="checkbox" id="soundEnabledCheckbox" checked> Enable Sound
                     </label>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="saveSettings" style="flex: 1; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer;">Save</button>
-                    <button id="showLeaderboard" style="flex: 1; padding: 10px; background: #F39C12; color: white; border: none; border-radius: 8px; cursor: pointer;">Leaderboard</button>
-                    <button id="showMultiplayer" style="flex: 1; padding: 10px; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer;">🌐 Multiplayer</button>
-                    <button id="closeSettings" style="flex: 1; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                    <button id="saveSettings" style="flex: 1; min-width: 120px; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer;">Save</button>
+                    <button id="showLeaderboard" style="flex: 1; min-width: 120px; padding: 10px; background: #F39C12; color: white; border: none; border-radius: 8px; cursor: pointer;">Leaderboard</button>
+                    <button id="showMultiplayer" style="flex: 1; min-width: 120px; padding: 10px; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🌐 Multiplayer</button>
+                    <button id="closeSettings" style="flex: 1; min-width: 120px; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">Close</button>
                 </div>
             </div>
 
@@ -718,6 +718,7 @@
                 <h2>Game Over!</h2>
                 <div id="finalScore">Score: 0 | Level: 0</div>
                 <button id="restartBtn">Play Again</button>
+                <button id="multiplayerFromGameOver" style="margin-top: 10px; width: 100%; padding: 10px; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🌐 Multiplayer</button>
             </div>
 
             <!-- Level Editor -->
@@ -767,6 +768,7 @@
                 this.instructionsElement = document.getElementById('instructions');
                 this.finalScoreElement = document.getElementById('finalScore');
                 this.restartBtn = document.getElementById('restartBtn');
+                this.multiplayerFromGameOverBtn = document.getElementById('multiplayerFromGameOver');
                 
                 // Settings elements
                 this.settingsBtn = document.getElementById('settingsBtn');
@@ -1202,6 +1204,14 @@
                     this.restart();
                 });
 
+                // Multiplayer button from game over screen
+                if (this.multiplayerFromGameOverBtn) {
+                    this.multiplayerFromGameOverBtn.addEventListener('click', () => {
+                        console.log('Multiplayer button clicked from game over');
+                        this.showMultiplayerMenu();
+                    });
+                }
+
                 // Settings button
                 this.settingsBtn.addEventListener('click', () => {
                     this.showSettings();
@@ -1342,8 +1352,11 @@
                 const showMultiplayerBtn = document.getElementById('showMultiplayer');
                 if (showMultiplayerBtn) {
                     showMultiplayerBtn.addEventListener('click', () => {
+                        console.log('Multiplayer button clicked');
                         this.showMultiplayerMenu();
                     });
+                } else {
+                    console.error('showMultiplayer button not found!');
                 }
 
                 // Background selection
@@ -1424,12 +1437,14 @@
                     if (e.code === 'KeyE' && this.gameState === 'playing') {
                         this.toggleLevelEditor();
                     }
-                    // Allow M key from multiple states (waiting, nameInput, gameOver, or even playing)
-                    if (e.code === 'KeyM') {
+                    // Allow M key from any state
+                    if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') {
                         e.preventDefault();
+                        e.stopPropagation();
+                        console.log('M key pressed, opening multiplayer menu');
                         this.showMultiplayerMenu();
                     }
-                });
+                }, true); // Use capture phase to catch the event early
 
                 // Canvas click for level editor
                 this.canvas.addEventListener('click', (e) => {
@@ -3533,8 +3548,11 @@
 
             // Multiplayer System
             showMultiplayerMenu() {
+                console.log('showMultiplayerMenu called');
+                console.log('multiplayerMenuElement:', this.multiplayerMenuElement);
                 if (this.multiplayerMenuElement) {
                     this.multiplayerMenuElement.style.display = 'block';
+                    console.log('Multiplayer menu displayed');
                     // Close other menus
                     if (this.settingsMenu) {
                         this.settingsMenu.style.display = 'none';
@@ -3545,8 +3563,20 @@
                     if (this.levelEditorElement) {
                         this.levelEditorElement.style.display = 'none';
                     }
+                    if (this.nameInputScreen) {
+                        this.nameInputScreen.style.display = 'none';
+                    }
+                    if (this.gameOverElement) {
+                        this.gameOverElement.style.display = 'none';
+                    }
                 } else {
-                    console.error('Multiplayer menu element not found');
+                    console.error('Multiplayer menu element not found!');
+                    // Try to find it again
+                    this.multiplayerMenuElement = document.getElementById('multiplayerMenu');
+                    if (this.multiplayerMenuElement) {
+                        console.log('Found multiplayer menu element on retry');
+                        this.showMultiplayerMenu();
+                    }
                 }
             }
 
