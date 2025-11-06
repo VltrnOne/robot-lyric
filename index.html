@@ -686,6 +686,21 @@
                 this.superCoins = [];
                 this.rockets = [];
                 this.rocketBoosts = []; // New rocket boost collectibles
+                this.magnets = []; // Magnet power-up (attracts coins)
+                this.freezes = []; // Freeze power-up (freezes obstacles)
+                this.doublePoints = []; // Double points power-up
+                this.magnetActive = false;
+                this.magnetTimeLeft = 0;
+                this.freezeActive = false;
+                this.freezeTimeLeft = 0;
+                this.doublePointsActive = false;
+                this.doublePointsTimeLeft = 0;
+                this.lastMagnetTime = 0;
+                this.lastFreezeTime = 0;
+                this.lastDoublePointsTime = 0;
+                this.magnetInterval = 20000; // 20 seconds
+                this.freezeInterval = 25000; // 25 seconds
+                this.doublePointsInterval = 30000; // 30 seconds
                 this.shieldCount = 0;
                 this.rocketActive = false;
                 this.rocketTimeLeft = 0;
@@ -759,6 +774,7 @@
                 this.musicTime = 0;
                 this.musicPattern = 0;
                 this.soundEnabled = true;
+                this.audioContextReady = false;
 
                 // Player and settings data
                 this.playerName = 'Player';
@@ -808,12 +824,80 @@
             setupEventListeners() {
                 // Mouse click
                 this.canvas.addEventListener('click', () => {
+                    // Resume audio context on first user interaction
+                    if (!this.audioContextReady && this.audioContext) {
+                        this.resumeAudioContext();
+                    }
                     if (this.gameState === 'waiting') {
                         this.startGame();
                     } else if (this.gameState === 'playing') {
                         this.jump();
                     }
                 });
+
+                // Mobile touch controls
+                let touchStartY = 0;
+                let touchStartX = 0;
+                let isTouching = false;
+                
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    // Resume audio context on first user interaction
+                    if (!this.audioContextReady && this.audioContext) {
+                        this.resumeAudioContext();
+                    }
+                    
+                    const touch = e.touches[0];
+                    touchStartY = touch.clientY;
+                    touchStartX = touch.clientX;
+                    isTouching = true;
+                    
+                    if (this.gameState === 'waiting') {
+                        this.startGame();
+                    } else if (this.gameState === 'playing') {
+                        this.jump();
+                    }
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (!isTouching || this.gameState !== 'playing') return;
+                    
+                    const touch = e.touches[0];
+                    const deltaY = touch.clientY - touchStartY;
+                    const deltaX = touch.clientX - touchStartX;
+                    
+                    // Vertical movement (jump/fall)
+                    if (Math.abs(deltaY) > 10) {
+                        if (deltaY < 0) {
+                            // Swipe up - jump
+                            this.robot.velocity = -this.jumpForce;
+                        } else {
+                            // Swipe down - fall faster
+                            this.robot.velocity = Math.min(this.robot.velocity + 2, 10);
+                        }
+                        touchStartY = touch.clientY;
+                    }
+                    
+                    // Horizontal movement
+                    if (Math.abs(deltaX) > 10) {
+                        const newX = this.robot.x + (deltaX * 0.5);
+                        this.robot.x = Math.max(50, Math.min(this.gameWidth - 50, newX));
+                        touchStartX = touch.clientX;
+                    }
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    isTouching = false;
+                }, { passive: false });
+                
+                // Prevent scrolling on mobile
+                this.canvas.addEventListener('touchmove', (e) => {
+                    if (this.gameState === 'playing') {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
 
                 // Keyboard controls
                 // Keyup handler for rocket boost (stop when B is released)
@@ -826,6 +910,10 @@
                 });
 
                 document.addEventListener('keydown', (e) => {
+                    // Resume audio context on first user interaction
+                    if (!this.audioContextReady && this.audioContext) {
+                        this.resumeAudioContext();
+                    }
                     if (e.code === 'Space') {
                         e.preventDefault();
                         if (this.gameState === 'waiting') {
@@ -2922,15 +3010,42 @@
             initAudio() {
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    this.startMusic();
+                    // Audio context starts suspended - will resume on user interaction
+                    if (this.audioContext.state === 'suspended') {
+                        this.audioContextReady = false;
+                    } else {
+                        this.audioContextReady = true;
+                        this.startMusic();
+                    }
                 } catch (e) {
                     console.log("Audio not supported");
                     this.soundEnabled = false;
+                    this.audioContextReady = false;
+                }
+            }
+
+            resumeAudioContext() {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume().then(() => {
+                        this.audioContextReady = true;
+                        if (this.soundEnabled && !this.musicPlaying) {
+                            this.startMusic();
+                        }
+                        console.log("Audio context resumed");
+                    }).catch(err => {
+                        console.error("Failed to resume audio context:", err);
+                    });
                 }
             }
 
             startMusic() {
-                if (!this.soundEnabled || this.musicPlaying) return;
+                if (!this.soundEnabled || this.musicPlaying || !this.audioContextReady) {
+                    // Try to resume audio context if suspended
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.resumeAudioContext();
+                    }
+                    return;
+                }
                 this.musicPlaying = true;
                 this.musicTime = 0;
             }
@@ -2949,7 +3064,7 @@
             }
 
             playMusicBeat() {
-                if (!this.audioContext) return;
+                if (!this.audioContext || !this.audioContextReady) return;
                 
                 // Create catchy viral melody with multiple layers
                 this.playMelodyLayer();
@@ -3071,7 +3186,13 @@
             }
 
             playSound(type) {
-                if (!this.soundEnabled || !this.audioContext) return;
+                if (!this.soundEnabled || !this.audioContext || !this.audioContextReady) {
+                    // Try to resume audio context if suspended
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.resumeAudioContext();
+                    }
+                    return;
+                }
                 
                 const oscillator = this.audioContext.createOscillator();
                 const gainNode = this.audioContext.createGain();
@@ -3150,7 +3271,7 @@
             }
 
             playGameOverSound() {
-                if (!this.soundEnabled || !this.audioContext) return;
+                if (!this.soundEnabled || !this.audioContext || !this.audioContextReady) return;
                 
                 // Stop the background music
                 this.musicPlaying = false;
