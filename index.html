@@ -4798,8 +4798,8 @@
                 // Draw rocket boosts
                 this.drawRocketBoosts();
 
-                // Draw magnets
-                this.drawMagnets();
+                // Draw magnets - DISABLED (removes red dots)
+                // this.drawMagnets();
 
                 // Draw freezes
                 this.drawFreezes();
@@ -5081,6 +5081,16 @@
             }
 
             drawMagnets() {
+                // MAGNETS DISABLED - NO RED DOTS WILL BE DRAWN
+                // This prevents red dots (magnets) from appearing
+                // Clear all magnets to prevent any red dots
+                if (this.magnets && this.magnets.length > 0) {
+                    this.magnets = [];
+                }
+                return;
+                
+                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
+                /*
                 this.magnets.forEach(magnet => {
                     if (!magnet.collected) {
                         this.ctx.save();
@@ -5110,6 +5120,7 @@
                         this.ctx.restore();
                     }
                 });
+                */
             }
 
             drawFreezes() {
