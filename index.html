@@ -1272,18 +1272,41 @@
 
                 if (mobileJump) {
                     mobileJump.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        if (this.gameState === 'waiting') {
-                            this.startGame();
-                        } else if (this.gameState === 'playing') {
-                            this.jump();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'waiting') {
+                                        this.startGame();
+                                    } else if (this.gameState === 'playing') {
+                                        this.jump();
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile jump touchstart:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile jump handler:', error);
                         }
                     });
-                    mobileJump.addEventListener('click', () => {
-                        if (this.gameState === 'waiting') {
-                            this.startGame();
-                        } else if (this.gameState === 'playing') {
-                            this.jump();
+                    mobileJump.addEventListener('click', (e) => {
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'waiting') {
+                                        this.startGame();
+                                    } else if (this.gameState === 'playing') {
+                                        this.jump();
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile jump click:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile jump click handler:', error);
                         }
                     });
                 }
@@ -1590,8 +1613,22 @@
             }
 
             jump() {
-                this.robot.velocity = this.jumpForce;
-                this.playSound('jump');
+                try {
+                    if (!this.robot) {
+                        console.error('Robot not initialized');
+                        return;
+                    }
+                    if (typeof this.jumpForce !== 'number') {
+                        console.error('Jump force not initialized');
+                        return;
+                    }
+                    this.robot.velocity = this.jumpForce;
+                    if (typeof this.playSound === 'function') {
+                        this.playSound('jump');
+                    }
+                } catch (error) {
+                    console.error('Error in jump function:', error);
+                }
             }
 
             restart() {
