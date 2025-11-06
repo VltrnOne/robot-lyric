@@ -1692,52 +1692,66 @@
             }
 
             checkCollisions() {
-                // Skip collision checks if invincible
-                if (this.invincible) {
-                    this.checkPowerUpCollisions();
-                    return;
-                }
-
-                // Ground collision with barrier
-                if (this.robot.y + this.robot.height > this.gameHeight - 50) {
-                    if (this.shieldCount > 0) {
-                        this.useShield();
-                        // Bounce back up from the barrier
-                        this.robot.y = this.gameHeight - 50 - this.robot.height - 5;
-                        this.robot.velocity = -8;
+                try {
+                    // Skip collision checks if invincible
+                    if (this.invincible) {
+                        this.checkPowerUpCollisions();
                         return;
                     }
-                    this.gameOver();
-                    return;
-                }
 
-                // Ceiling collision
-                if (this.robot.y < 0) {
-                    if (this.shieldCount > 0) {
-                        this.useShield();
+                    // Safety check for robot
+                    if (!this.robot || typeof this.robot.x !== 'number' || typeof this.robot.y !== 'number') {
                         return;
                     }
-                    this.gameOver();
-                    return;
-                }
 
-                // Obstacle collision
-                this.obstacles.forEach(obstacle => {
-                    if (this.robot.x < obstacle.x + obstacle.width &&
-                        this.robot.x + this.robot.width > obstacle.x) {
-                        if (this.robot.y < obstacle.topHeight ||
-                            this.robot.y + this.robot.height > obstacle.bottomY) {
-                            if (this.shieldCount > 0) {
-                                this.useShield();
+                    // Ground collision with barrier
+                    if (this.robot.y + (this.robot.height || 20) > this.gameHeight - 50) {
+                        if (this.shieldCount > 0) {
+                            this.useShield();
+                            // Bounce back up from the barrier
+                            this.robot.y = this.gameHeight - 50 - (this.robot.height || 20) - 5;
+                            this.robot.velocity = -8;
+                            return;
+                        }
+                        this.gameOver();
+                        return;
+                    }
+
+                    // Ceiling collision
+                    if (this.robot.y < 0) {
+                        if (this.shieldCount > 0) {
+                            this.useShield();
+                            return;
+                        }
+                        this.gameOver();
+                        return;
+                    }
+
+                    // Obstacle collision (safe iteration)
+                    for (let i = 0; i < this.obstacles.length; i++) {
+                        const obstacle = this.obstacles[i];
+                        if (!obstacle) continue;
+                        
+                        if (this.robot.x < obstacle.x + (obstacle.width || 50) &&
+                            this.robot.x + (this.robot.width || 20) > obstacle.x) {
+                            if (this.robot.y < (obstacle.topHeight || 0) ||
+                                this.robot.y + (this.robot.height || 20) > (obstacle.bottomY || this.gameHeight)) {
+                                if (this.shieldCount > 0) {
+                                    this.useShield();
+                                    return;
+                                }
+                                this.gameOver();
                                 return;
                             }
-                            this.gameOver();
                         }
                     }
-                });
 
-                // Power-up collisions
-                this.checkPowerUpCollisions();
+                    // Power-up collisions
+                    this.checkPowerUpCollisions();
+                } catch (error) {
+                    console.error('Error in checkCollisions:', error);
+                    // Don't freeze the game - just log the error
+                }
             }
 
             checkPowerUpCollisions() {
