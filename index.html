@@ -47,6 +47,74 @@
             z-index: 10;
         }
 
+        /* Mobile Touch Controls */
+        #mobileControls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: none;
+            gap: 10px;
+            z-index: 20;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .mobile-control-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .mobile-btn {
+            background: rgba(52, 73, 94, 0.9);
+            color: white;
+            border: 3px solid #3498DB;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            min-width: 60px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+        }
+
+        .mobile-btn:active {
+            transform: scale(0.95);
+            background: rgba(52, 73, 94, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mobile-btn.jump {
+            background: rgba(46, 204, 113, 0.9);
+            border-color: #2ECC71;
+        }
+
+        .mobile-btn.boost {
+            background: rgba(231, 76, 60, 0.9);
+            border-color: #E74C3C;
+        }
+
+        .mobile-btn.direction {
+            background: rgba(52, 152, 219, 0.9);
+            border-color: #3498DB;
+        }
+
         #score {
             position: absolute;
             bottom: 20px;
@@ -563,6 +631,18 @@
             <div id="instructions">Click or Press SPACE to Fly!<br><br>🪙 Coins = 3s Invincibility (1 per coin)<br>⭐ Super Coins = 8 Bonus Coins!<br>🚀 Rockets = Slow Motion + Full Control<br>⚡ Rocket Boosts = Speed Boost (Press B to activate)<br><br>Player 1: SPACE to jump, WASD for rockets, B for boost<br>Player 2: Press P to activate (unlocks after first coin)<br>Player 2: Arrow Keys + ENTER to fire<br>Press R to Restart</div>
             <div id="score">Score: 0</div>
             
+            <!-- Mobile Touch Controls -->
+            <div id="mobileControls">
+                <div class="mobile-control-row">
+                    <button class="mobile-btn direction" id="mobileLeft">←</button>
+                    <button class="mobile-btn jump" id="mobileJump">↑</button>
+                    <button class="mobile-btn direction" id="mobileRight">→</button>
+                </div>
+                <div class="mobile-control-row">
+                    <button class="mobile-btn boost" id="mobileBoost">⚡ BOOST</button>
+                </div>
+            </div>
+            
             <div id="nameInputScreen">
                 <h1>🤖 ROBOT LYRIC</h1>
                 <h2 style="font-size: 16px; color: #666; margin-top: -10px; margin-bottom: 20px;">by Lyric and Aria</h2>
@@ -999,6 +1079,75 @@
                         this.startMusic();
                     }
                 });
+
+                // Mobile touch controls
+                const mobileJump = document.getElementById('mobileJump');
+                const mobileLeft = document.getElementById('mobileLeft');
+                const mobileRight = document.getElementById('mobileRight');
+                const mobileBoost = document.getElementById('mobileBoost');
+
+                if (mobileJump) {
+                    mobileJump.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (this.gameState === 'waiting') {
+                            this.startGame();
+                        } else if (this.gameState === 'playing') {
+                            this.jump();
+                        }
+                    });
+                    mobileJump.addEventListener('click', () => {
+                        if (this.gameState === 'waiting') {
+                            this.startGame();
+                        } else if (this.gameState === 'playing') {
+                            this.jump();
+                        }
+                    });
+                }
+
+                if (mobileLeft) {
+                    mobileLeft.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (this.gameState === 'playing') {
+                            this.robot.x = Math.max(50, this.robot.x - 8);
+                        }
+                    });
+                    mobileLeft.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                    });
+                    mobileLeft.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                    });
+                }
+
+                if (mobileRight) {
+                    mobileRight.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (this.gameState === 'playing') {
+                            this.robot.x = Math.min(this.gameWidth - 50, this.robot.x + 8);
+                        }
+                    });
+                    mobileRight.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                    });
+                    mobileRight.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                    });
+                }
+
+                if (mobileBoost) {
+                    mobileBoost.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (this.gameState === 'playing' && this.rocketBoostStored > 0 && !this.rocketBoostActive) {
+                            this.activateRocketBoost();
+                        }
+                    });
+                    mobileBoost.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        if (this.gameState === 'playing' && this.rocketBoostActive) {
+                            this.stopRocketBoost();
+                        }
+                    });
+                }
 
                 // Settings menu buttons
                 this.saveSettingsBtn.addEventListener('click', () => {
@@ -3039,13 +3188,23 @@
             }
 
             startMusic() {
-                if (!this.soundEnabled || this.musicPlaying || !this.audioContextReady) {
-                    // Try to resume audio context if suspended
-                    if (this.audioContext && this.audioContext.state === 'suspended') {
-                        this.resumeAudioContext();
-                    }
+                if (!this.soundEnabled) return;
+                
+                // Try to resume audio context if suspended
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.resumeAudioContext();
+                    // Wait a bit for context to resume
+                    setTimeout(() => {
+                        if (this.audioContextReady && !this.musicPlaying) {
+                            this.musicPlaying = true;
+                            this.musicTime = 0;
+                        }
+                    }, 100);
                     return;
                 }
+                
+                if (this.musicPlaying || !this.audioContextReady) return;
+                
                 this.musicPlaying = true;
                 this.musicTime = 0;
             }
@@ -3186,13 +3345,28 @@
             }
 
             playSound(type) {
-                if (!this.soundEnabled || !this.audioContext || !this.audioContextReady) {
-                    // Try to resume audio context if suspended
-                    if (this.audioContext && this.audioContext.state === 'suspended') {
-                        this.resumeAudioContext();
-                    }
+                if (!this.soundEnabled) return;
+                
+                // Ensure audio context exists
+                if (!this.audioContext) {
+                    this.initAudio();
                     return;
                 }
+                
+                // Try to resume audio context if suspended
+                if (this.audioContext.state === 'suspended') {
+                    this.resumeAudioContext();
+                    // Play sound after a short delay to allow context to resume
+                    setTimeout(() => this.playSound(type), 50);
+                    return;
+                }
+                
+                // Set ready if context is running
+                if (this.audioContext.state === 'running' && !this.audioContextReady) {
+                    this.audioContextReady = true;
+                }
+                
+                if (!this.audioContextReady) return;
                 
                 const oscillator = this.audioContext.createOscillator();
                 const gainNode = this.audioContext.createGain();
@@ -3323,3 +3497,4 @@
     </script>
 </body>
 </html>
+
