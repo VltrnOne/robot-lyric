@@ -1075,6 +1075,12 @@
                 this.setupEventListeners();
                 this.createClouds();
                 this.updateUI();
+                this.handleResize();
+                
+                // Add window resize handler for responsive canvas
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                });
                 
                 if (this.gameState === 'nameInput') {
                     this.showNameInputScreen();
@@ -1083,6 +1089,38 @@
                 }
                 
                 this.gameLoop();
+            }
+            
+            handleResize() {
+                // Adjust canvas size for mobile and landscape
+                const container = document.getElementById('gameContainer');
+                const canvas = this.canvas;
+                
+                if (window.innerWidth <= 768) {
+                    // Mobile mode - use full viewport
+                    if (container) {
+                        container.style.width = '100vw';
+                        container.style.height = '100vh';
+                    }
+                    if (canvas) {
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
+                        this.gameWidth = window.innerWidth;
+                        this.gameHeight = window.innerHeight;
+                    }
+                } else {
+                    // Desktop mode - use fixed size
+                    if (container) {
+                        container.style.width = '800px';
+                        container.style.height = '600px';
+                    }
+                    if (canvas) {
+                        canvas.width = 800;
+                        canvas.height = 600;
+                        this.gameWidth = 800;
+                        this.gameHeight = 600;
+                    }
+                }
             }
 
             setupEventListeners() {
