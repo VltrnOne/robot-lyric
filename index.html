@@ -1866,8 +1866,9 @@
             update() {
                 if (this.gameState !== 'playing') return;
                 
-                // AGGRESSIVELY clear all missiles FIRST THING EVERY FRAME to prevent red dots
+                // AGGRESSIVELY clear all missiles and magnets FIRST THING EVERY FRAME to prevent red dots
                 this.missiles = [];
+                this.magnets = [];
                 
                 // Track play time for achievements
                 this.achievementStats.playTime = (this.achievementStats.playTime || 0) + 16; // Assuming 60fps
@@ -4230,7 +4231,8 @@
                                 collected: false
                             });
                         } else if (randomPowerUp === 'magnet') {
-                            this.magnets.push({
+                            // MAGNETS DISABLED - NO RED DOTS
+                            // this.magnets.push({
                                 x: x,
                                 y: y,
                                 size: 22,
