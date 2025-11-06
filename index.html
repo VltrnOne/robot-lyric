@@ -1799,21 +1799,49 @@
                     this.coins = [];
                 }
 
-                // Check super coin collisions
-                this.superCoins.forEach((superCoin, index) => {
-                    if (!superCoin.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - superCoin.x, 2) + 
-                            Math.pow(this.robot.y - superCoin.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + superCoin.size)) {
-                            superCoin.collected = true;
-                            this.activateSuperCoin();
-                            this.superCoins.splice(index, 1);
-                            this.playSound('superCoin');
+                // Check super coin collisions (safe iteration)
+                try {
+                    const superCoinsToRemove = [];
+                    const superCoinsToCollect = [];
+                    
+                    this.superCoins.forEach((superCoin, index) => {
+                        if (superCoin && !superCoin.collected) {
+                            const dx = (this.robot.x || 0) - (superCoin.x || 0);
+                            const dy = (this.robot.y || 0) - (superCoin.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (superCoin.size || 30);
+                            
+                            if (distance < collisionDistance) {
+                                superCoin.collected = true;
+                                superCoinsToCollect.push(superCoin);
+                                superCoinsToRemove.push(index);
+                            }
                         }
+                    });
+                    
+                    if (superCoinsToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                superCoinsToCollect.forEach(superCoin => {
+                                    this.activateSuperCoin();
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('superCoin');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in super coin collection:', error);
+                            }
+                        }, 0);
                     }
-                });
+                    
+                    superCoinsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.superCoins.length) {
+                            this.superCoins.splice(index, 1);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error in super coin collision detection:', error);
+                }
 
                 // Check rocket collisions (safe iteration)
                 try {
@@ -1906,53 +1934,137 @@
                     console.error('Error in rocket boost collision detection:', error);
                 }
 
-                // Check magnet collisions
-                this.magnets.forEach((magnet, index) => {
-                    if (!magnet.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - magnet.x, 2) + 
-                            Math.pow(this.robot.y - magnet.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + magnet.size)) {
-                            magnet.collected = true;
-                            this.activateMagnet();
+                // Check magnet collisions (safe iteration)
+                try {
+                    const magnetsToRemove = [];
+                    const magnetsToCollect = [];
+                    
+                    this.magnets.forEach((magnet, index) => {
+                        if (magnet && !magnet.collected) {
+                            const dx = (this.robot.x || 0) - (magnet.x || 0);
+                            const dy = (this.robot.y || 0) - (magnet.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (magnet.size || 22);
+                            
+                            if (distance < collisionDistance) {
+                                magnet.collected = true;
+                                magnetsToCollect.push(magnet);
+                                magnetsToRemove.push(index);
+                            }
+                        }
+                    });
+                    
+                    if (magnetsToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                magnetsToCollect.forEach(magnet => {
+                                    this.activateMagnet();
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('coin');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in magnet collection:', error);
+                            }
+                        }, 0);
+                    }
+                    
+                    magnetsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.magnets.length) {
                             this.magnets.splice(index, 1);
-                            this.playSound('coin');
                         }
-                    }
-                });
+                    });
+                } catch (error) {
+                    console.error('Error in magnet collision detection:', error);
+                }
 
-                // Check freeze collisions
-                this.freezes.forEach((freeze, index) => {
-                    if (!freeze.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - freeze.x, 2) + 
-                            Math.pow(this.robot.y - freeze.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + freeze.size)) {
-                            freeze.collected = true;
-                            this.activateFreeze();
+                // Check freeze collisions (safe iteration)
+                try {
+                    const freezesToRemove = [];
+                    const freezesToCollect = [];
+                    
+                    this.freezes.forEach((freeze, index) => {
+                        if (freeze && !freeze.collected) {
+                            const dx = (this.robot.x || 0) - (freeze.x || 0);
+                            const dy = (this.robot.y || 0) - (freeze.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (freeze.size || 24);
+                            
+                            if (distance < collisionDistance) {
+                                freeze.collected = true;
+                                freezesToCollect.push(freeze);
+                                freezesToRemove.push(index);
+                            }
+                        }
+                    });
+                    
+                    if (freezesToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                freezesToCollect.forEach(freeze => {
+                                    this.activateFreeze();
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('shield');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in freeze collection:', error);
+                            }
+                        }, 0);
+                    }
+                    
+                    freezesToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.freezes.length) {
                             this.freezes.splice(index, 1);
-                            this.playSound('shield');
                         }
-                    }
-                });
+                    });
+                } catch (error) {
+                    console.error('Error in freeze collision detection:', error);
+                }
 
-                // Check double points collisions
-                this.doublePoints.forEach((doublePoint, index) => {
-                    if (!doublePoint.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - doublePoint.x, 2) + 
-                            Math.pow(this.robot.y - doublePoint.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + doublePoint.size)) {
-                            doublePoint.collected = true;
-                            this.activateDoublePoints();
-                            this.doublePoints.splice(index, 1);
-                            this.playSound('superCoin');
+                // Check double points collisions (safe iteration)
+                try {
+                    const doublePointsToRemove = [];
+                    const doublePointsToCollect = [];
+                    
+                    this.doublePoints.forEach((doublePoint, index) => {
+                        if (doublePoint && !doublePoint.collected) {
+                            const dx = (this.robot.x || 0) - (doublePoint.x || 0);
+                            const dy = (this.robot.y || 0) - (doublePoint.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (doublePoint.size || 26);
+                            
+                            if (distance < collisionDistance) {
+                                doublePoint.collected = true;
+                                doublePointsToCollect.push(doublePoint);
+                                doublePointsToRemove.push(index);
+                            }
                         }
+                    });
+                    
+                    if (doublePointsToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                doublePointsToCollect.forEach(doublePoint => {
+                                    this.activateDoublePoints();
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('superCoin');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in double points collection:', error);
+                            }
+                        }, 0);
                     }
-                });
+                    
+                    doublePointsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.doublePoints.length) {
+                            this.doublePoints.splice(index, 1);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error in double points collision detection:', error);
+                }
 
                 // Check missile collisions
                 this.missiles.forEach((missile, index) => {
