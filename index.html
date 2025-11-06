@@ -1025,6 +1025,9 @@
                 this.lastBossHitTime = 0;
                 this.bossHitCooldown = 500; // 500ms cooldown between boss hits
                 this.hitProjectiles = new Set(); // Track which projectiles have already hit
+                this.obstaclesPassed = 0; // Track gates/obstacles passed
+                this.bossModeEnabled = false; // Boss mode disabled until 50 gates
+                this.bossModePromptShown = false; // Track if prompt has been shown
 
                 // Level editor system
                 this.levelEditorActive = false;
@@ -1075,12 +1078,17 @@
                 this.setupEventListeners();
                 this.createClouds();
                 this.updateUI();
-                this.handleResize();
-                
-                // Add window resize handler for responsive canvas
+                // Add window resize and orientation change handlers
                 window.addEventListener('resize', () => {
-                    this.handleResize();
+                    setTimeout(() => this.handleResize(), 100);
                 });
+                
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => this.handleResize(), 200);
+                });
+                
+                // Initial resize
+                setTimeout(() => this.handleResize(), 100);
                 
                 if (this.gameState === 'nameInput') {
                     this.showNameInputScreen();
@@ -1096,30 +1104,42 @@
                 const container = document.getElementById('gameContainer');
                 const canvas = this.canvas;
                 
-                if (window.innerWidth <= 768) {
+                if (!canvas || !container) return;
+                
+                // Use window dimensions or screen dimensions for mobile
+                const isMobile = window.innerWidth <= 768 || window.screen.width <= 768;
+                
+                if (isMobile) {
                     // Mobile mode - use full viewport
-                    if (container) {
-                        container.style.width = '100vw';
-                        container.style.height = '100vh';
-                    }
-                    if (canvas) {
-                        canvas.width = window.innerWidth;
-                        canvas.height = window.innerHeight;
-                        this.gameWidth = window.innerWidth;
-                        this.gameHeight = window.innerHeight;
+                    const width = window.innerWidth || window.screen.width;
+                    const height = window.innerHeight || window.screen.height;
+                    
+                    container.style.width = width + 'px';
+                    container.style.height = height + 'px';
+                    container.style.maxWidth = '100vw';
+                    container.style.maxHeight = '100vh';
+                    
+                    // Set canvas actual size (not just CSS)
+                    canvas.width = width;
+                    canvas.height = height;
+                    this.gameWidth = width;
+                    this.gameHeight = height;
+                    
+                    // Update robot position if needed
+                    if (this.robot) {
+                        this.robot.y = Math.min(this.robot.y, height - 50);
                     }
                 } else {
                     // Desktop mode - use fixed size
-                    if (container) {
-                        container.style.width = '800px';
-                        container.style.height = '600px';
-                    }
-                    if (canvas) {
-                        canvas.width = 800;
-                        canvas.height = 600;
-                        this.gameWidth = 800;
-                        this.gameHeight = 600;
-                    }
+                    container.style.width = '800px';
+                    container.style.height = '600px';
+                    container.style.maxWidth = '800px';
+                    container.style.maxHeight = '600px';
+                    
+                    canvas.width = 800;
+                    canvas.height = 600;
+                    this.gameWidth = 800;
+                    this.gameHeight = 600;
                 }
             }
 
