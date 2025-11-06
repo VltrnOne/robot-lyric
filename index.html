@@ -2397,7 +2397,8 @@
                 }
 
                 // Check missile collisions - DISABLED (missiles cause red dots and freeze)
-                // Clear all missiles to prevent red dots
+                // AGGRESSIVELY clear all missiles EVERY FRAME to prevent red dots
+                this.missiles = [];
                 if (this.missiles && this.missiles.length > 0) {
                     this.missiles = [];
                 }
@@ -5277,7 +5278,8 @@
             drawMissiles() {
                 // MISSILES DISABLED - NO RED DOTS WILL BE DRAWN
                 // This prevents red dots (missiles) from appearing and freezing gameplay
-                // Clear all missiles to prevent any red dots
+                // AGGRESSIVELY clear all missiles to prevent any red dots
+                this.missiles = [];
                 if (this.missiles && this.missiles.length > 0) {
                     this.missiles = [];
                 }
