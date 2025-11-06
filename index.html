@@ -1583,9 +1583,20 @@
             }
 
             startGame() {
-                this.gameState = 'playing';
-                this.instructionsElement.style.display = 'none';
-                this.gameOverElement.style.display = 'none';
+                try {
+                    this.gameState = 'playing';
+                    if (this.instructionsElement) {
+                        this.instructionsElement.style.display = 'none';
+                    }
+                    if (this.gameOverElement) {
+                        this.gameOverElement.style.display = 'none';
+                    }
+                    if (this.nameInputScreen) {
+                        this.nameInputScreen.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error in startGame:', error);
+                }
             }
 
             startGameFromNameInput() {
