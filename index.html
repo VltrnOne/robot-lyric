@@ -3535,6 +3535,18 @@
             showMultiplayerMenu() {
                 if (this.multiplayerMenuElement) {
                     this.multiplayerMenuElement.style.display = 'block';
+                    // Close other menus
+                    if (this.settingsMenu) {
+                        this.settingsMenu.style.display = 'none';
+                    }
+                    if (this.leaderboard) {
+                        this.leaderboard.style.display = 'none';
+                    }
+                    if (this.levelEditorElement) {
+                        this.levelEditorElement.style.display = 'none';
+                    }
+                } else {
+                    console.error('Multiplayer menu element not found');
                 }
             }
 
