@@ -718,6 +718,39 @@
                 <div id="finalScore">Score: 0 | Level: 0</div>
                 <button id="restartBtn">Play Again</button>
             </div>
+
+            <!-- Level Editor -->
+            <div id="levelEditor" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: white; padding: 30px; border-radius: 15px; display: none; z-index: 1000; pointer-events: all; min-width: 400px;">
+                <h2>📝 Level Editor</h2>
+                <div style="margin: 20px 0;">
+                    <label>Mode:</label>
+                    <select id="editorModeSelect" style="width: 100%; padding: 8px; margin-top: 5px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                        <option value="obstacle">Obstacle</option>
+                        <option value="coin">Coin</option>
+                        <option value="powerup">Power-up</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="saveLevelBtn" style="flex: 1; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer;">Save Level</button>
+                    <button id="loadLevelBtn" style="flex: 1; padding: 10px; background: #3498DB; color: white; border: none; border-radius: 8px; cursor: pointer;">Load Level</button>
+                    <button id="closeEditorBtn" style="flex: 1; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+                </div>
+                <div style="margin-top: 15px; font-size: 12px; color: #999;">
+                    Click on canvas to place items. Press E to toggle editor.
+                </div>
+            </div>
+
+            <!-- Multiplayer Menu -->
+            <div id="multiplayerMenu" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: white; padding: 30px; border-radius: 15px; display: none; z-index: 1000; pointer-events: all; min-width: 400px;">
+                <h2>🌐 Multiplayer</h2>
+                <div style="margin: 20px 0;">
+                    <button id="createRoomBtn" style="width: 100%; padding: 15px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">Create Room</button>
+                    <input type="text" id="roomIdInput" placeholder="Enter Room ID" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                    <button id="joinRoomBtn" style="width: 100%; padding: 15px; background: #3498DB; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">Join Room</button>
+                    <div id="roomStatus" style="margin-top: 15px; font-size: 14px; color: #999;"></div>
+                </div>
+                <button id="closeMultiplayerBtn" style="width: 100%; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+            </div>
         </div>
     </div>
 
@@ -765,6 +798,21 @@
                 this.achievementBadgesElement = document.getElementById('achievementBadges');
                 this.spendingCurrencyElement = document.getElementById('spendingCurrency');
                 this.achievementBankList = document.getElementById('achievementBankList');
+                
+                // Level editor elements
+                this.levelEditorElement = document.getElementById('levelEditor');
+                this.editorModeSelect = document.getElementById('editorModeSelect');
+                this.saveLevelBtn = document.getElementById('saveLevelBtn');
+                this.loadLevelBtn = document.getElementById('loadLevelBtn');
+                this.closeEditorBtn = document.getElementById('closeEditorBtn');
+                
+                // Multiplayer elements
+                this.multiplayerMenuElement = document.getElementById('multiplayerMenu');
+                this.createRoomBtn = document.getElementById('createRoomBtn');
+                this.joinRoomBtn = document.getElementById('joinRoomBtn');
+                this.roomIdInput = document.getElementById('roomIdInput');
+                this.roomStatusElement = document.getElementById('roomStatus');
+                this.closeMultiplayerBtn = document.getElementById('closeMultiplayerBtn');
 
                 this.gameWidth = 800;
                 this.gameHeight = 600;
@@ -850,14 +898,38 @@
                     firstRocket: false,
                     firstOilCan: false,
                     firstSuperCoin: false,
+                    firstMagnet: false,
+                    firstFreeze: false,
+                    firstDoublePoints: false,
+                    firstRocketBoost: false,
                     level5: false,
                     level10: false,
                     level20: false,
+                    level30: false,
+                    level50: false,
                     score100: false,
                     score500: false,
                     score1000: false,
+                    score2000: false,
+                    score5000: false,
                     perfectRun: false,
-                    missileMaster: false
+                    missileMaster: false,
+                    coinCollector: false, // Collect 50 coins
+                    powerUpMaster: false, // Collect 20 power-ups
+                    speedDemon: false, // Use 10 rocket boosts
+                    invincibleWarrior: false, // Use 20 shields
+                    bossSlayer: false, // Defeat first boss
+                    bossMaster: false, // Defeat 5 bosses
+                    survivalist: false, // Survive 5 minutes
+                    marathonRunner: false // Survive 10 minutes
+                };
+                this.achievementStats = {
+                    coinsCollected: 0,
+                    powerUpsCollected: 0,
+                    rocketBoostsUsed: 0,
+                    shieldsUsed: 0,
+                    bossesDefeated: 0,
+                    playTime: 0
                 };
                 this.achievementBadgesElement = null;
                 this.superCoinInterval = 30000; // 30 seconds between super coins (rare)
@@ -892,6 +964,32 @@
                 this.soundEffectVolume = 0.4;
                 this.lastAutoSaveTime = 0;
                 this.autoSaveInterval = 30000; // 30 seconds
+
+                // Boss battle system
+                this.bosses = [];
+                this.bossActive = false;
+                this.currentBoss = null;
+                this.bossSpawnInterval = 60000; // Spawn boss every 60 seconds
+                this.lastBossSpawnTime = 0;
+                this.bossHealth = 0;
+                this.bossMaxHealth = 100;
+                this.bossPhase = 0;
+                this.bossAttackPattern = 0;
+                this.bossAttackCooldown = 0;
+
+                // Level editor system
+                this.levelEditorActive = false;
+                this.editorObstacles = [];
+                this.editorMode = 'obstacle'; // 'obstacle', 'coin', 'powerup'
+                this.savedLevels = [];
+
+                // Multiplayer system
+                this.multiplayerActive = false;
+                this.peerConnection = null;
+                this.dataChannel = null;
+                this.remotePlayer = null;
+                this.isHost = false;
+                this.roomId = null;
 
                 // Player and settings data
                 this.playerName = 'Player';
@@ -1267,6 +1365,70 @@
                 this.settingsBtnMain.addEventListener('click', () => {
                     this.showSettings();
                 });
+
+                // Level editor controls
+                if (this.editorModeSelect) {
+                    this.editorModeSelect.addEventListener('change', (e) => {
+                        this.editorMode = e.target.value;
+                    });
+                }
+
+                if (this.saveLevelBtn) {
+                    this.saveLevelBtn.addEventListener('click', () => {
+                        this.saveLevel();
+                    });
+                }
+
+                if (this.loadLevelBtn) {
+                    this.loadLevelBtn.addEventListener('click', () => {
+                        this.loadLevel();
+                    });
+                }
+
+                if (this.closeEditorBtn) {
+                    this.closeEditorBtn.addEventListener('click', () => {
+                        this.closeLevelEditor();
+                    });
+                }
+
+                // Multiplayer controls
+                if (this.createRoomBtn) {
+                    this.createRoomBtn.addEventListener('click', () => {
+                        this.createMultiplayerRoom();
+                    });
+                }
+
+                if (this.joinRoomBtn) {
+                    this.joinRoomBtn.addEventListener('click', () => {
+                        this.joinMultiplayerRoom();
+                    });
+                }
+
+                if (this.closeMultiplayerBtn) {
+                    this.closeMultiplayerBtn.addEventListener('click', () => {
+                        this.closeMultiplayerMenu();
+                    });
+                }
+
+                // Level editor toggle (E key) and Multiplayer (M key)
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'KeyE' && this.gameState === 'playing') {
+                        this.toggleLevelEditor();
+                    }
+                    if (e.code === 'KeyM' && this.gameState === 'waiting') {
+                        this.showMultiplayerMenu();
+                    }
+                });
+
+                // Canvas click for level editor
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.levelEditorActive) {
+                        const rect = this.canvas.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        this.placeEditorItem(x, y);
+                    }
+                });
             }
 
             startGame() {
@@ -1367,6 +1529,10 @@
 
             update() {
                 if (this.gameState !== 'playing') return;
+                
+                // Track play time for achievements
+                this.achievementStats.playTime = (this.achievementStats.playTime || 0) + 16; // Assuming 60fps
+                this.checkStatAchievements();
 
                 // Update robot
                 this.robot.velocity += this.gravity;
@@ -1388,6 +1554,17 @@
                 if (now - this.lastObstacleTime > this.obstacleInterval) {
                     this.createObstacle();
                     this.lastObstacleTime = now;
+                }
+
+                // Generate bosses
+                if (!this.bossActive && now - this.lastBossSpawnTime > this.bossSpawnInterval) {
+                    this.spawnBoss();
+                    this.lastBossSpawnTime = now;
+                }
+
+                // Update bosses
+                if (this.bossActive && this.currentBoss) {
+                    this.updateBoss();
                 }
 
                 // Update obstacles
@@ -1703,9 +1880,11 @@
 
             useShield() {
                 this.shieldCount--;
+                this.achievementStats.shieldsUsed = (this.achievementStats.shieldsUsed || 0) + 1;
                 this.activateInvincibility();
                 this.showShieldEffect();
                 this.playSound('shield');
+                this.checkStatAchievements();
             }
             
             collectCoin(coin) {
@@ -1732,6 +1911,10 @@
                         this.spendingCurrency = (this.spendingCurrency || 0) + 1;
                     }
                     
+                    // Update achievement stats
+                    this.achievementStats.coinsCollected = (this.achievementStats.coinsCollected || 0) + 1;
+                    this.achievementStats.powerUpsCollected = (this.achievementStats.powerUpsCollected || 0) + 1;
+                    
                     // Defer ALL UI updates and effects to prevent blocking
                     setTimeout(() => {
                         try {
@@ -1739,6 +1922,7 @@
                             this.playSound('coin');
                             this.checkAchievement('firstCoin');
                             this.checkScoreAchievements();
+                            this.checkStatAchievements();
                             
                             // Show coin effect (deferred)
                             if (coin && coin.rarity) {
@@ -1802,8 +1986,10 @@
                     this.rocketBoostStored = 0; // Clear stored boost
                     this.rocketBoostActiveElement.style.display = 'inline-block';
                     this.rocketBoostStoredElement.style.display = 'none';
+                    this.achievementStats.rocketBoostsUsed = (this.achievementStats.rocketBoostsUsed || 0) + 1;
                     this.showRocketBoostEffect();
                     this.playSound('rocket');
+                    this.checkStatAchievements();
                 }
             }
 
@@ -1828,8 +2014,11 @@
                     this.rocketBoostStored = Math.min(3000, this.rocketBoostStored + 3000); // Add 3 seconds (max 3s total)
                     this.rocketBoostStoredElement.style.display = 'inline-block';
                     this.rocketBoostStoredElement.textContent = `⚡ Boost: ${(this.rocketBoostStored / 1000).toFixed(1)}s`;
+                    this.achievementStats.powerUpsCollected = (this.achievementStats.powerUpsCollected || 0) + 1;
                     this.showRocketBoostCollectEffect();
                     this.playSound('rocket');
+                    this.checkAchievement('firstRocketBoost');
+                    this.checkStatAchievements();
                 }
             }
 
@@ -1993,19 +2182,28 @@
             activateMagnet() {
                 this.magnetActive = true;
                 this.magnetTimeLeft = 5000; // 5 seconds
+                this.achievementStats.powerUpsCollected = (this.achievementStats.powerUpsCollected || 0) + 1;
                 this.showMagnetEffect();
+                this.checkAchievement('firstMagnet');
+                this.checkStatAchievements();
             }
 
             activateFreeze() {
                 this.freezeActive = true;
                 this.freezeTimeLeft = 4000; // 4 seconds
+                this.achievementStats.powerUpsCollected = (this.achievementStats.powerUpsCollected || 0) + 1;
                 this.showFreezeEffect();
+                this.checkAchievement('firstFreeze');
+                this.checkStatAchievements();
             }
 
             activateDoublePoints() {
                 this.doublePointsActive = true;
                 this.doublePointsTimeLeft = 10000; // 10 seconds
+                this.achievementStats.powerUpsCollected = (this.achievementStats.powerUpsCollected || 0) + 1;
                 this.showDoublePointsEffect();
+                this.checkAchievement('firstDoublePoints');
+                this.checkStatAchievements();
             }
 
             showMagnetEffect() {
@@ -2257,6 +2455,12 @@
                 if (this.score >= 1000 && !this.achievements.score1000) {
                     this.checkAchievement('score1000');
                 }
+                if (this.score >= 2000 && !this.achievements.score2000) {
+                    this.checkAchievement('score2000');
+                }
+                if (this.score >= 5000 && !this.achievements.score5000) {
+                    this.checkAchievement('score5000');
+                }
             }
             
             checkLevelAchievements() {
@@ -2269,6 +2473,47 @@
                 if (this.level >= 20 && !this.achievements.level20) {
                     this.checkAchievement('level20');
                 }
+                if (this.level >= 30 && !this.achievements.level30) {
+                    this.checkAchievement('level30');
+                }
+                if (this.level >= 50 && !this.achievements.level50) {
+                    this.checkAchievement('level50');
+                }
+            }
+            
+            checkStatAchievements() {
+                // Coin collector
+                if (this.achievementStats.coinsCollected >= 50 && !this.achievements.coinCollector) {
+                    this.checkAchievement('coinCollector');
+                }
+                // Power-up master
+                if (this.achievementStats.powerUpsCollected >= 20 && !this.achievements.powerUpMaster) {
+                    this.checkAchievement('powerUpMaster');
+                }
+                // Speed demon
+                if (this.achievementStats.rocketBoostsUsed >= 10 && !this.achievements.speedDemon) {
+                    this.checkAchievement('speedDemon');
+                }
+                // Invincible warrior
+                if (this.achievementStats.shieldsUsed >= 20 && !this.achievements.invincibleWarrior) {
+                    this.checkAchievement('invincibleWarrior');
+                }
+                // Boss slayer
+                if (this.achievementStats.bossesDefeated >= 1 && !this.achievements.bossSlayer) {
+                    this.checkAchievement('bossSlayer');
+                }
+                // Boss master
+                if (this.achievementStats.bossesDefeated >= 5 && !this.achievements.bossMaster) {
+                    this.checkAchievement('bossMaster');
+                }
+                // Survivalist
+                if (this.achievementStats.playTime >= 300000 && !this.achievements.survivalist) { // 5 minutes
+                    this.checkAchievement('survivalist');
+                }
+                // Marathon runner
+                if (this.achievementStats.playTime >= 600000 && !this.achievements.marathonRunner) { // 10 minutes
+                    this.checkAchievement('marathonRunner');
+                }
             }
             
             addAchievementToBank(achievementKey) {
@@ -2277,14 +2522,30 @@
                     firstRocket: '🚀 First Rocket',
                     firstOilCan: '🛢️ First Oil',
                     firstSuperCoin: '⭐ First Super Coin',
+                    firstMagnet: '🧲 First Magnet',
+                    firstFreeze: '❄️ First Freeze',
+                    firstDoublePoints: '✖️ First Double Points',
+                    firstRocketBoost: '⚡ First Rocket Boost',
                     level5: '🏆 Level 5',
                     level10: '👑 Level 10',
                     level20: '💎 Level 20',
+                    level30: '💠 Level 30',
+                    level50: '👑 Level 50',
                     score100: '💯 Score 100',
                     score500: '🔥 Score 500',
                     score1000: '🌟 Score 1000',
+                    score2000: '⭐ Score 2000',
+                    score5000: '💫 Score 5000',
                     perfectRun: '✨ Perfect Run',
-                    missileMaster: '🎯 Missile Master'
+                    missileMaster: '🎯 Missile Master',
+                    coinCollector: '🪙 Coin Collector (50)',
+                    powerUpMaster: '⚡ Power-Up Master (20)',
+                    speedDemon: '⚡ Speed Demon (10 boosts)',
+                    invincibleWarrior: '🛡️ Invincible Warrior (20 shields)',
+                    bossSlayer: '👹 Boss Slayer',
+                    bossMaster: '👹 Boss Master (5)',
+                    survivalist: '⏱️ Survivalist (5 min)',
+                    marathonRunner: '🏃 Marathon Runner (10 min)'
                 };
                 
                 if (!this.achievementBankList) return;
@@ -2826,6 +3087,526 @@
                 });
             }
 
+            // Boss Battle System
+            spawnBoss() {
+                if (this.bossActive) return;
+                
+                this.bossActive = true;
+                this.bossPhase = 0;
+                this.bossMaxHealth = 100 + (this.level * 20);
+                this.bossHealth = this.bossMaxHealth;
+                this.bossAttackPattern = 0;
+                this.bossAttackCooldown = 0;
+                
+                this.currentBoss = {
+                    x: this.gameWidth + 100,
+                    y: this.gameHeight / 2,
+                    width: 80,
+                    height: 80,
+                    velocity: { x: -1, y: 0 },
+                    rotation: 0,
+                    phase: 0,
+                    attackCooldown: 0,
+                    projectiles: [],
+                    glow: 0
+                };
+                
+                this.showBossWarning();
+                this.playSound('rocket'); // Boss spawn sound
+            }
+
+            updateBoss() {
+                if (!this.currentBoss) return;
+                
+                const boss = this.currentBoss;
+                boss.glow += 0.1;
+                
+                // Boss movement pattern
+                if (boss.x > this.gameWidth - 150) {
+                    boss.x += boss.velocity.x;
+                } else {
+                    // Oscillate vertically
+                    boss.y += Math.sin(boss.glow) * 0.5;
+                    boss.y = Math.max(100, Math.min(this.gameHeight - 100, boss.y));
+                }
+                
+                boss.rotation += 0.02;
+                
+                // Boss attacks
+                boss.attackCooldown -= 16;
+                if (boss.attackCooldown <= 0) {
+                    this.bossAttack(boss);
+                    boss.attackCooldown = 2000 - (this.level * 50); // Faster attacks at higher levels
+                }
+                
+                // Update boss projectiles
+                boss.projectiles.forEach((proj, index) => {
+                    proj.x += proj.velocity.x;
+                    proj.y += proj.velocity.y;
+                    
+                    // Remove projectiles that are off screen
+                    if (proj.x < -50 || proj.x > this.gameWidth + 50 || 
+                        proj.y < -50 || proj.y > this.gameHeight + 50) {
+                        boss.projectiles.splice(index, 1);
+                    }
+                    
+                    // Check collision with robot
+                    const distance = Math.sqrt(
+                        Math.pow(this.robot.x - proj.x, 2) + 
+                        Math.pow(this.robot.y - proj.y, 2)
+                    );
+                    if (distance < (this.robot.width / 2 + proj.size)) {
+                        if (!this.invincible) {
+                            this.robotPower -= 15;
+                            this.updatePowerBar();
+                            this.playSound('damage');
+                            boss.projectiles.splice(index, 1);
+                        }
+                    }
+                });
+                
+                // Check collision with robot
+                const distance = Math.sqrt(
+                    Math.pow(this.robot.x - boss.x, 2) + 
+                    Math.pow(this.robot.y - boss.y, 2)
+                );
+                if (distance < (this.robot.width / 2 + boss.width / 2)) {
+                    if (!this.invincible) {
+                        this.robotPower -= 20;
+                        this.updatePowerBar();
+                        this.playSound('damage');
+                    } else {
+                        // If invincible, damage boss on contact
+                        this.damageBoss(5);
+                    }
+                }
+                
+                // Boss phases based on health
+                const healthPercent = this.bossHealth / this.bossMaxHealth;
+                if (healthPercent < 0.3 && boss.phase < 3) {
+                    boss.phase = 3; // Enraged phase
+                } else if (healthPercent < 0.6 && boss.phase < 2) {
+                    boss.phase = 2; // Aggressive phase
+                } else if (healthPercent < 0.9 && boss.phase < 1) {
+                    boss.phase = 1; // Active phase
+                }
+            }
+
+            bossAttack(boss) {
+                const patterns = [
+                    // Pattern 1: Single shot
+                    () => {
+                        boss.projectiles.push({
+                            x: boss.x - boss.width / 2,
+                            y: boss.y,
+                            size: 10,
+                            velocity: { x: -3, y: 0 }
+                        });
+                    },
+                    // Pattern 2: Triple shot
+                    () => {
+                        for (let i = -1; i <= 1; i++) {
+                            boss.projectiles.push({
+                                x: boss.x - boss.width / 2,
+                                y: boss.y,
+                                size: 10,
+                                velocity: { x: -3, y: i * 1.5 }
+                            });
+                        }
+                    },
+                    // Pattern 3: Spiral shot (enraged)
+                    () => {
+                        const angle = boss.glow * 2;
+                        for (let i = 0; i < 3; i++) {
+                            const a = angle + (i * Math.PI * 2 / 3);
+                            boss.projectiles.push({
+                                x: boss.x - boss.width / 2,
+                                y: boss.y,
+                                size: 10,
+                                velocity: { x: -3 * Math.cos(a), y: -3 * Math.sin(a) }
+                            });
+                        }
+                    }
+                ];
+                
+                const patternIndex = boss.phase >= 3 ? 2 : (boss.phase >= 1 ? 1 : 0);
+                patterns[patternIndex]();
+                this.playSound('missile');
+            }
+
+            damageBoss(damage) {
+                if (!this.bossActive || !this.currentBoss) return;
+                
+                this.bossHealth -= damage;
+                if (this.bossHealth <= 0) {
+                    this.defeatBoss();
+                } else {
+                    this.showBossDamage(damage);
+                }
+            }
+
+            defeatBoss() {
+                this.bossActive = false;
+                this.achievementStats.bossesDefeated = (this.achievementStats.bossesDefeated || 0) + 1;
+                this.score += 50;
+                this.showBossDefeatEffect();
+                this.playSound('superCoin');
+                this.checkAchievement('bossSlayer');
+                this.checkStatAchievements();
+                this.currentBoss = null;
+            }
+
+            showBossWarning() {
+                const warning = document.createElement('div');
+                warning.style.position = 'absolute';
+                warning.style.top = '20%';
+                warning.style.left = '50%';
+                warning.style.transform = 'translateX(-50%)';
+                warning.style.color = '#E74C3C';
+                warning.style.fontSize = '48px';
+                warning.style.fontWeight = 'bold';
+                warning.style.textShadow = '3px 3px 6px rgba(0,0,0,0.9)';
+                warning.style.zIndex = '1000';
+                warning.style.pointerEvents = 'none';
+                warning.textContent = '👹 BOSS INCOMING! 👹';
+                document.body.appendChild(warning);
+                setTimeout(() => {
+                    warning.style.transition = 'opacity 1s';
+                    warning.style.opacity = '0';
+                    setTimeout(() => warning.remove(), 1000);
+                }, 2000);
+            }
+
+            showBossDamage(damage) {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#E74C3C';
+                effect.style.fontSize = '24px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = `💥 -${damage}`;
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 500);
+            }
+
+            showBossDefeatEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#FFD700';
+                effect.style.fontSize = '48px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '3px 3px 6px rgba(0,0,0,0.9)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '👹 BOSS DEFEATED! +50';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 1s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 1000);
+                }, 2000);
+            }
+
+            drawBoss() {
+                if (!this.bossActive || !this.currentBoss) return;
+                
+                const boss = this.currentBoss;
+                this.ctx.save();
+                this.ctx.translate(boss.x, boss.y);
+                this.ctx.rotate(boss.rotation);
+                
+                // Boss glow effect
+                const glowIntensity = Math.sin(boss.glow) * 0.3 + 0.7;
+                this.ctx.shadowColor = '#E74C3C';
+                this.ctx.shadowBlur = 20 + Math.sin(boss.glow) * 10;
+                
+                // Boss body (large red square with spikes)
+                this.ctx.fillStyle = '#E74C3C';
+                this.ctx.fillRect(-boss.width / 2, -boss.height / 2, boss.width, boss.height);
+                
+                // Boss spikes
+                this.ctx.fillStyle = '#C0392B';
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI * 2 / 4) + boss.rotation;
+                    const spikeX = Math.cos(angle) * (boss.width / 2 + 10);
+                    const spikeY = Math.sin(angle) * (boss.height / 2 + 10);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(spikeX, spikeY);
+                    this.ctx.lineTo(spikeX - 10, spikeY - 10);
+                    this.ctx.lineTo(spikeX + 10, spikeY - 10);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                }
+                
+                // Boss eyes
+                this.ctx.fillStyle = '#FF0000';
+                this.ctx.beginPath();
+                this.ctx.arc(-15, -10, 8, 0, Math.PI * 2);
+                this.ctx.arc(15, -10, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Boss health bar
+                this.ctx.restore();
+                const barWidth = 200;
+                const barHeight = 10;
+                const barX = boss.x - barWidth / 2;
+                const barY = boss.y - boss.height / 2 - 20;
+                
+                // Health bar background
+                this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                // Health bar fill
+                const healthPercent = this.bossHealth / this.bossMaxHealth;
+                this.ctx.fillStyle = healthPercent > 0.5 ? '#2ECC71' : (healthPercent > 0.25 ? '#F39C12' : '#E74C3C');
+                this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+                
+                // Health bar border
+                this.ctx.strokeStyle = '#FFFFFF';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(barX, barY, barWidth, barHeight);
+                
+                // Draw boss projectiles
+                boss.projectiles.forEach(proj => {
+                    this.ctx.save();
+                    this.ctx.translate(proj.x, proj.y);
+                    this.ctx.fillStyle = '#E74C3C';
+                    this.ctx.shadowColor = '#E74C3C';
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                });
+            }
+
+            // Level Editor System
+            toggleLevelEditor() {
+                this.levelEditorActive = !this.levelEditorActive;
+                if (this.levelEditorElement) {
+                    this.levelEditorElement.style.display = this.levelEditorActive ? 'block' : 'none';
+                }
+            }
+
+            placeEditorItem(x, y) {
+                if (!this.levelEditorActive) return;
+                
+                switch(this.editorMode) {
+                    case 'obstacle':
+                        this.editorObstacles.push({
+                            x: x,
+                            y: y,
+                            width: this.obstacleWidth,
+                            topHeight: 100,
+                            bottomY: this.gameHeight - 100
+                        });
+                        break;
+                    case 'coin':
+                        this.coins.push({
+                            x: x,
+                            y: y,
+                            size: 15,
+                            velocity: { x: 0, y: 0 },
+                            rotation: 0,
+                            collected: false,
+                            rarity: this.coinRarities[2], // Gold
+                            gatesRemaining: 20,
+                            glowPhase: 0
+                        });
+                        break;
+                    case 'powerup':
+                        // Random power-up
+                        const powerUps = ['rocket', 'magnet', 'freeze', 'doublePoints'];
+                        const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+                        if (randomPowerUp === 'rocket') {
+                            this.rockets.push({
+                                x: x,
+                                y: y,
+                                size: 25,
+                                velocity: { x: 0, y: 0 },
+                                rotation: 0,
+                                collected: false
+                            });
+                        } else if (randomPowerUp === 'magnet') {
+                            this.magnets.push({
+                                x: x,
+                                y: y,
+                                size: 22,
+                                velocity: { x: 0, y: 0 },
+                                rotation: 0,
+                                collected: false,
+                                glow: 0
+                            });
+                        } else if (randomPowerUp === 'freeze') {
+                            this.freezes.push({
+                                x: x,
+                                y: y,
+                                size: 24,
+                                velocity: { x: 0, y: 0 },
+                                rotation: 0,
+                                collected: false,
+                                glow: 0
+                            });
+                        } else if (randomPowerUp === 'doublePoints') {
+                            this.doublePoints.push({
+                                x: x,
+                                y: y,
+                                size: 26,
+                                velocity: { x: 0, y: 0 },
+                                rotation: 0,
+                                collected: false,
+                                glow: 0
+                            });
+                        }
+                        break;
+                }
+            }
+
+            saveLevel() {
+                const levelData = {
+                    obstacles: this.editorObstacles,
+                    coins: this.coins.filter(c => !c.collected),
+                    powerUps: {
+                        rockets: this.rockets.filter(r => !r.collected),
+                        magnets: this.magnets.filter(m => !m.collected),
+                        freezes: this.freezes.filter(f => !f.collected),
+                        doublePoints: this.doublePoints.filter(d => !d.collected)
+                    },
+                    name: `Level ${this.savedLevels.length + 1}`,
+                    timestamp: Date.now()
+                };
+                
+                this.savedLevels.push(levelData);
+                localStorage.setItem('robot_lyric_levels', JSON.stringify(this.savedLevels));
+                alert(`Level saved! Total levels: ${this.savedLevels.length}`);
+            }
+
+            loadLevel() {
+                const savedLevels = localStorage.getItem('robot_lyric_levels');
+                if (!savedLevels) {
+                    alert('No saved levels found!');
+                    return;
+                }
+                
+                this.savedLevels = JSON.parse(savedLevels);
+                if (this.savedLevels.length === 0) {
+                    alert('No saved levels found!');
+                    return;
+                }
+                
+                // Load the most recent level
+                const level = this.savedLevels[this.savedLevels.length - 1];
+                this.editorObstacles = level.obstacles || [];
+                // Note: In a full implementation, you'd load obstacles into the game
+                alert(`Loaded: ${level.name}`);
+            }
+
+            closeLevelEditor() {
+                this.levelEditorActive = false;
+                if (this.levelEditorElement) {
+                    this.levelEditorElement.style.display = 'none';
+                }
+            }
+
+            // Multiplayer System
+            showMultiplayerMenu() {
+                if (this.multiplayerMenuElement) {
+                    this.multiplayerMenuElement.style.display = 'block';
+                }
+            }
+
+            closeMultiplayerMenu() {
+                if (this.multiplayerMenuElement) {
+                    this.multiplayerMenuElement.style.display = 'none';
+                }
+            }
+
+            createMultiplayerRoom() {
+                // Generate room ID
+                this.roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                this.isHost = true;
+                
+                if (this.roomStatusElement) {
+                    this.roomStatusElement.textContent = `Room ID: ${this.roomId} - Waiting for player...`;
+                    this.roomStatusElement.style.color = '#2ECC71';
+                }
+                
+                // Initialize WebRTC (simplified - would use PeerJS or similar in production)
+                this.initMultiplayer();
+            }
+
+            joinMultiplayerRoom() {
+                const roomId = this.roomIdInput.value.trim().toUpperCase();
+                if (!roomId) {
+                    alert('Please enter a room ID');
+                    return;
+                }
+                
+                this.roomId = roomId;
+                this.isHost = false;
+                
+                if (this.roomStatusElement) {
+                    this.roomStatusElement.textContent = `Joining room: ${roomId}...`;
+                    this.roomStatusElement.style.color = '#3498DB';
+                }
+                
+                // Initialize WebRTC connection
+                this.initMultiplayer();
+            }
+
+            initMultiplayer() {
+                // Simplified multiplayer initialization
+                // In production, use PeerJS or WebSocket server
+                this.multiplayerActive = true;
+                
+                // Simulate connection (would use actual WebRTC/WebSocket)
+                setTimeout(() => {
+                    if (this.roomStatusElement) {
+                        this.roomStatusElement.textContent = `Connected! Room: ${this.roomId}`;
+                        this.roomStatusElement.style.color = '#2ECC71';
+                    }
+                    
+                    // Start multiplayer game
+                    if (this.gameState === 'waiting') {
+                        this.startGame();
+                    }
+                }, 1000);
+            }
+
+            sendMultiplayerData(data) {
+                if (!this.multiplayerActive || !this.dataChannel) return;
+                
+                try {
+                    this.dataChannel.send(JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to send multiplayer data:', e);
+                }
+            }
+
+            receiveMultiplayerData(data) {
+                try {
+                    const message = JSON.parse(data);
+                    // Handle remote player data
+                    if (message.type === 'playerUpdate') {
+                        this.remotePlayer = message.data;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse multiplayer data:', e);
+                }
+            }
+
             updatePowerUps() {
                 // Update coins (safe iteration with error handling)
                 try {
@@ -3181,6 +3962,9 @@
 
                 // Draw obstacles
                 this.drawObstacles();
+
+                // Draw boss
+                this.drawBoss();
 
                 // Draw power-ups
                 this.drawPowerUps();
