@@ -1705,6 +1705,12 @@
             startGame() {
                 try {
                     this.gameState = 'playing';
+                    // Clear any existing bosses and projectiles
+                    this.currentBoss = null;
+                    this.bossActive = false;
+                    if (this.bosses) {
+                        this.bosses = [];
+                    }
                     if (this.instructionsElement) {
                         this.instructionsElement.style.display = 'none';
                     }
@@ -1872,15 +1878,24 @@
                     this.lastObstacleTime = now;
                 }
 
-                // Boss mode disabled - no bosses will spawn
-                // Generate bosses (only if boss mode is enabled after 50 gates)
+                // Boss mode completely disabled - no bosses will spawn
+                // Clear any existing bosses and projectiles
+                if (this.currentBoss) {
+                    this.currentBoss = null;
+                    this.bossActive = false;
+                }
+                if (this.bosses && this.bosses.length > 0) {
+                    this.bosses = [];
+                }
+                
+                // Generate bosses - DISABLED
                 // DISABLED: if (this.bossModeEnabled && !this.bossActive && now - this.lastBossSpawnTime > this.bossSpawnInterval) {
                 //     this.spawnBoss();
                 //     this.lastBossSpawnTime = now;
                 // }
 
                 // Update bosses - DISABLED
-                // if (this.bossActive && this.currentBoss) {
+                // DISABLED: if (this.bossActive && this.currentBoss) {
                 //     this.updateBoss();
                 // }
 
