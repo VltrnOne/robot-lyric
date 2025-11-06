@@ -1902,6 +1902,9 @@
                     this.bosses = [];
                 }
                 
+                // AGGRESSIVELY clear all missiles EVERY FRAME to prevent red dots
+                this.missiles = [];
+                
                 // Generate bosses - DISABLED
                 // DISABLED: if (this.bossModeEnabled && !this.bossActive && now - this.lastBossSpawnTime > this.bossSpawnInterval) {
                 //     this.spawnBoss();
@@ -4697,7 +4700,8 @@
                 });
                 
                 // Update missiles - DISABLED (missiles cause red dots and freeze)
-                // Clear all missiles to prevent red dots
+                // AGGRESSIVELY clear all missiles EVERY FRAME to prevent red dots
+                this.missiles = [];
                 if (this.missiles && this.missiles.length > 0) {
                     this.missiles = [];
                 }
