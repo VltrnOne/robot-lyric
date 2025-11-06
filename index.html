@@ -1035,7 +1035,7 @@
                 this.bossHitCooldown = 500; // 500ms cooldown between boss hits
                 this.hitProjectiles = new Set(); // Track which projectiles have already hit
                 this.obstaclesPassed = 0; // Track gates/obstacles passed
-                this.bossModeEnabled = false; // Boss mode disabled until 50 gates
+                this.bossModeEnabled = false; // Boss mode completely disabled
                 this.bossModePromptShown = false; // Track if prompt has been shown
 
                 // Level editor system
@@ -1872,16 +1872,17 @@
                     this.lastObstacleTime = now;
                 }
 
+                // Boss mode disabled - no bosses will spawn
                 // Generate bosses (only if boss mode is enabled after 50 gates)
-                if (this.bossModeEnabled && !this.bossActive && now - this.lastBossSpawnTime > this.bossSpawnInterval) {
-                    this.spawnBoss();
-                    this.lastBossSpawnTime = now;
-                }
+                // DISABLED: if (this.bossModeEnabled && !this.bossActive && now - this.lastBossSpawnTime > this.bossSpawnInterval) {
+                //     this.spawnBoss();
+                //     this.lastBossSpawnTime = now;
+                // }
 
-                // Update bosses
-                if (this.bossActive && this.currentBoss) {
-                    this.updateBoss();
-                }
+                // Update bosses - DISABLED
+                // if (this.bossActive && this.currentBoss) {
+                //     this.updateBoss();
+                // }
 
                 // Update obstacles
                 let currentSpeed = this.obstacleSpeed;
@@ -1914,10 +1915,11 @@
                             }
                         });
                         
+                        // Boss mode completely disabled - no prompt
                         // Check if 50 gates passed and show boss mode prompt
-                        if (this.obstaclesPassed === 50 && !this.bossModePromptShown) {
-                            this.showBossModePrompt();
-                        }
+                        // DISABLED: if (this.obstaclesPassed === 50 && !this.bossModePromptShown) {
+                        //     this.showBossModePrompt();
+                        // }
                     }
                 });
 
@@ -4033,6 +4035,8 @@
             }
 
             drawBoss() {
+                // Boss mode completely disabled - no drawing
+                return;
                 if (!this.bossActive || !this.currentBoss) return;
                 
                 const boss = this.currentBoss;
@@ -4703,8 +4707,8 @@
                 // Draw obstacles
                 this.drawObstacles();
 
-                // Draw boss
-                this.drawBoss();
+                // Draw boss - DISABLED (boss mode removed)
+                // this.drawBoss();
 
                 // Draw power-ups
                 this.drawPowerUps();
