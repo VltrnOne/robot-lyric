@@ -2859,49 +2859,6 @@
                 }, 2000);
             }
 
-            fireMissile() {
-                // MISSILES DISABLED - NO RED DOTS WILL BE CREATED
-                // This prevents red dots (missiles) from being fired and freezing gameplay
-                return;
-                
-                // ALL CODE BELOW IS DISABLED - NO MISSILES WILL BE FIRED
-                /*
-                if (this.player2Missiles <= 0) {
-                    console.log("No missiles available");
-                    return;
-                }
-                
-                const now = Date.now();
-                if (now - this.lastMissileTime < this.missileCooldown) {
-                    console.log("Missile on cooldown");
-                    return;
-                }
-                
-                this.player2Missiles--;
-                this.lastMissileTime = now;
-                
-                // Create missile aimed at robot from center of screen with spiral movement
-                const angle = Math.atan2(this.robot.y - this.gameHeight/2, this.robot.x - this.gameWidth/2);
-                this.missiles.push({
-                    x: this.gameWidth / 2,
-                    y: this.gameHeight / 2,
-                    size: 8,
-                    velocity: {
-                        x: Math.cos(angle) * 6,
-                        y: Math.sin(angle) * 6
-                    },
-                    rotation: angle,
-                    spiralRadius: 20 + Math.random() * 30, // Random spiral radius
-                    spiralSpeed: 0.1 + Math.random() * 0.1, // Random spiral speed
-                    spiralPhase: 0,
-                    baseAngle: angle,
-                    life: 0
-                });
-                
-                this.playSound('missile');
-                console.log(`Missile fired! Remaining: ${this.player2Missiles}`);
-                */
-            }
 
             hitByMissile() {
                 this.robotPower -= 10; // 10% damage
@@ -3628,24 +3585,6 @@
                 });
             }
 
-            createMagnet() {
-                // MAGNETS DISABLED - NO RED DOTS WILL BE CREATED
-                return;
-                /*
-                this.magnets.push({
-                    x: Math.random() * (this.gameWidth - 100) + 50,
-                    y: Math.random() * (this.gameHeight - 200) + 100,
-                    size: 22,
-                    velocity: {
-                        x: (Math.random() - 0.5) * 1.5,
-                        y: (Math.random() - 0.5) * 1.5
-                    },
-                    rotation: 0,
-                    collected: false,
-                    glow: 0
-                });
-                */
-            }
 
             createFreeze() {
                 this.freezes.push({
