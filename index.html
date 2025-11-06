@@ -2268,12 +2268,14 @@
                     console.error('Error in rocket boost collision detection:', error);
                 }
 
-                // Check magnet collisions (safe iteration)
-                try {
-                    const magnetsToRemove = [];
-                    const magnetsToCollect = [];
-                    
-                    this.magnets.forEach((magnet, index) => {
+                // Check magnet collisions - DISABLED (magnets cause red dots)
+                // Clear all magnets to prevent red dots
+                this.magnets = [];
+                // DISABLED: try {
+                //     const magnetsToRemove = [];
+                //     const magnetsToCollect = [];
+                //     
+                //     this.magnets.forEach((magnet, index) => {
                         if (magnet && !magnet.collected) {
                             const dx = (this.robot.x || 0) - (magnet.x || 0);
                             const dy = (this.robot.y || 0) - (magnet.y || 0);
