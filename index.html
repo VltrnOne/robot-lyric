@@ -3177,45 +3177,87 @@
                     boss.attackCooldown = 2000 - (this.level * 50); // Faster attacks at higher levels
                 }
                 
-                // Update boss projectiles
+                // Update boss projectiles (safe iteration - collect items to remove first)
+                const projectilesToRemove = [];
                 boss.projectiles.forEach((proj, index) => {
-                    proj.x += proj.velocity.x;
-                    proj.y += proj.velocity.y;
+                    if (!proj || typeof proj.x !== 'number' || typeof proj.y !== 'number') {
+                        projectilesToRemove.push(index);
+                        return;
+                    }
+                    
+                    proj.x += proj.velocity.x || 0;
+                    proj.y += proj.velocity.y || 0;
                     
                     // Remove projectiles that are off screen
                     if (proj.x < -50 || proj.x > this.gameWidth + 50 || 
                         proj.y < -50 || proj.y > this.gameHeight + 50) {
-                        boss.projectiles.splice(index, 1);
+                        projectilesToRemove.push(index);
+                        return;
                     }
                     
-                    // Check collision with robot
-                    const distance = Math.sqrt(
-                        Math.pow(this.robot.x - proj.x, 2) + 
-                        Math.pow(this.robot.y - proj.y, 2)
-                    );
-                    if (distance < (this.robot.width / 2 + proj.size)) {
-                        if (!this.invincible) {
-                            this.robotPower -= 15;
-                            this.updatePowerBar();
-                            this.playSound('damage');
-                            boss.projectiles.splice(index, 1);
+                    // Check collision with robot (safe with null checks)
+                    if (this.robot && typeof this.robot.x === 'number' && typeof this.robot.y === 'number') {
+                        try {
+                            const distance = Math.sqrt(
+                                Math.pow(this.robot.x - proj.x, 2) + 
+                                Math.pow(this.robot.y - proj.y, 2)
+                            );
+                            const collisionDistance = (this.robot.width || 20) / 2 + (proj.size || 10);
+                            
+                            if (distance < collisionDistance) {
+                                if (!this.invincible) {
+                                    this.robotPower = Math.max(0, (this.robotPower || 100) - 15);
+                                    if (typeof this.updatePowerBar === 'function') {
+                                        this.updatePowerBar();
+                                    }
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('damage');
+                                    }
+                                    projectilesToRemove.push(index);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error in boss projectile collision:', error);
+                            // Remove problematic projectile
+                            projectilesToRemove.push(index);
                         }
                     }
                 });
                 
-                // Check collision with robot
-                const distance = Math.sqrt(
-                    Math.pow(this.robot.x - boss.x, 2) + 
-                    Math.pow(this.robot.y - boss.y, 2)
-                );
-                if (distance < (this.robot.width / 2 + boss.width / 2)) {
-                    if (!this.invincible) {
-                        this.robotPower -= 20;
-                        this.updatePowerBar();
-                        this.playSound('damage');
-                    } else {
-                        // If invincible, damage boss on contact
-                        this.damageBoss(5);
+                // Remove projectiles in reverse order to maintain indices
+                projectilesToRemove.sort((a, b) => b - a).forEach(index => {
+                    if (index >= 0 && index < boss.projectiles.length) {
+                        boss.projectiles.splice(index, 1);
+                    }
+                });
+                
+                // Check collision with robot (safe with null checks)
+                if (this.robot && typeof this.robot.x === 'number' && typeof this.robot.y === 'number') {
+                    try {
+                        const distance = Math.sqrt(
+                            Math.pow(this.robot.x - boss.x, 2) + 
+                            Math.pow(this.robot.y - boss.y, 2)
+                        );
+                        const collisionDistance = (this.robot.width || 20) / 2 + (boss.width || 80) / 2;
+                        
+                        if (distance < collisionDistance) {
+                            if (!this.invincible) {
+                                this.robotPower = Math.max(0, (this.robotPower || 100) - 20);
+                                if (typeof this.updatePowerBar === 'function') {
+                                    this.updatePowerBar();
+                                }
+                                if (typeof this.playSound === 'function') {
+                                    this.playSound('damage');
+                                }
+                            } else {
+                                // If invincible, damage boss on contact
+                                if (typeof this.damageBoss === 'function') {
+                                    this.damageBoss(5);
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error in boss collision:', error);
                     }
                 }
                 
