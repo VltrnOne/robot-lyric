@@ -703,6 +703,7 @@
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button id="saveSettings" style="flex: 1; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer;">Save</button>
                     <button id="showLeaderboard" style="flex: 1; padding: 10px; background: #F39C12; color: white; border: none; border-radius: 8px; cursor: pointer;">Leaderboard</button>
+                    <button id="showMultiplayer" style="flex: 1; padding: 10px; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer;">🌐 Multiplayer</button>
                     <button id="closeSettings" style="flex: 1; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer;">Close</button>
                 </div>
             </div>
@@ -1337,6 +1338,14 @@
                     this.closeLeaderboard();
                 });
 
+                // Multiplayer button in settings
+                const showMultiplayerBtn = document.getElementById('showMultiplayer');
+                if (showMultiplayerBtn) {
+                    showMultiplayerBtn.addEventListener('click', () => {
+                        this.showMultiplayerMenu();
+                    });
+                }
+
                 // Background selection
                 document.querySelectorAll('.bg-option').forEach(option => {
                     option.addEventListener('click', () => {
@@ -1415,7 +1424,9 @@
                     if (e.code === 'KeyE' && this.gameState === 'playing') {
                         this.toggleLevelEditor();
                     }
-                    if (e.code === 'KeyM' && this.gameState === 'waiting') {
+                    // Allow M key from multiple states (waiting, nameInput, gameOver, or even playing)
+                    if (e.code === 'KeyM') {
+                        e.preventDefault();
                         this.showMultiplayerMenu();
                     }
                 });
