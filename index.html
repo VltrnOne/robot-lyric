@@ -1788,6 +1788,10 @@
                 if (this.bosses) {
                     this.bosses = [];
                 }
+                // Clear all missiles (red dots) to prevent freezing
+                if (this.missiles) {
+                    this.missiles = [];
+                }
                 // Hide mobile controls when restarting
                 this.updateMobileControlsVisibility();
                 this.score = 0;
@@ -2385,18 +2389,22 @@
                     console.error('Error in double points collision detection:', error);
                 }
 
-                // Check missile collisions
-                this.missiles.forEach((missile, index) => {
-                    const distance = Math.sqrt(
-                        Math.pow(this.robot.x - missile.x, 2) + 
-                        Math.pow(this.robot.y - missile.y, 2)
-                    );
-                    if (distance < (this.robot.width / 2 + missile.size)) {
-                        this.hitByMissile();
-                        this.missiles.splice(index, 1);
-                        this.playSound('damage');
-                    }
-                });
+                // Check missile collisions - DISABLED (missiles cause red dots and freeze)
+                // Clear all missiles to prevent red dots
+                if (this.missiles && this.missiles.length > 0) {
+                    this.missiles = [];
+                }
+                // DISABLED: this.missiles.forEach((missile, index) => {
+                //     const distance = Math.sqrt(
+                //         Math.pow(this.robot.x - missile.x, 2) + 
+                //         Math.pow(this.robot.y - missile.y, 2)
+                //     );
+                //     if (distance < (this.robot.width / 2 + missile.size)) {
+                //         this.hitByMissile();
+                //         this.missiles.splice(index, 1);
+                //         this.playSound('damage');
+                //     }
+                // });
                 
                 // Check oil can collisions
                 this.oilCans.forEach((oilCan, index) => {
@@ -2842,6 +2850,12 @@
             }
 
             fireMissile() {
+                // MISSILES DISABLED - NO RED DOTS WILL BE CREATED
+                // This prevents red dots (missiles) from being fired and freezing gameplay
+                return;
+                
+                // ALL CODE BELOW IS DISABLED - NO MISSILES WILL BE FIRED
+                /*
                 if (this.player2Missiles <= 0) {
                     console.log("No missiles available");
                     return;
@@ -2876,6 +2890,7 @@
                 
                 this.playSound('missile');
                 console.log(`Missile fired! Remaining: ${this.player2Missiles}`);
+                */
             }
 
             hitByMissile() {
@@ -4677,30 +4692,34 @@
                     oilCan.y = Math.max(oilCan.size, Math.min(this.gameHeight - 100, oilCan.y));
                 });
                 
-                // Update missiles with spiral movement
-                this.missiles.forEach((missile, index) => {
-                    missile.life += 16; // Track missile lifetime
-                    
-                    // Spiral movement calculation
-                    missile.spiralPhase += missile.spiralSpeed;
-                    const spiralOffsetX = Math.cos(missile.spiralPhase) * missile.spiralRadius * 0.1;
-                    const spiralOffsetY = Math.sin(missile.spiralPhase) * missile.spiralRadius * 0.1;
-                    
-                    // Apply spiral offset to base movement
-                    missile.x += missile.velocity.x + spiralOffsetX;
-                    missile.y += missile.velocity.y + spiralOffsetY;
-                    
-                    // Update rotation based on movement direction
-                    const currentAngle = Math.atan2(missile.velocity.y + spiralOffsetY, missile.velocity.x + spiralOffsetX);
-                    missile.rotation = currentAngle;
-                    
-                    // Remove missiles that are off screen or have lived too long
-                    if (missile.x < -50 || missile.x > this.gameWidth + 50 || 
-                        missile.y < -50 || missile.y > this.gameHeight + 50 ||
-                        missile.life > 5000) { // 5 second max lifetime
-                        this.missiles.splice(index, 1);
-                    }
-                });
+                // Update missiles - DISABLED (missiles cause red dots and freeze)
+                // Clear all missiles to prevent red dots
+                if (this.missiles && this.missiles.length > 0) {
+                    this.missiles = [];
+                }
+                // DISABLED: this.missiles.forEach((missile, index) => {
+                //     missile.life += 16; // Track missile lifetime
+                //     
+                //     // Spiral movement calculation
+                //     missile.spiralPhase += missile.spiralSpeed;
+                //     const spiralOffsetX = Math.cos(missile.spiralPhase) * missile.spiralRadius * 0.1;
+                //     const spiralOffsetY = Math.sin(missile.spiralPhase) * missile.spiralRadius * 0.1;
+                //     
+                //     // Apply spiral offset to base movement
+                //     missile.x += missile.velocity.x + spiralOffsetX;
+                //     missile.y += missile.velocity.y + spiralOffsetY;
+                //     
+                //     // Update rotation based on movement direction
+                //     const currentAngle = Math.atan2(missile.velocity.y + spiralOffsetY, missile.velocity.x + spiralOffsetX);
+                //     missile.rotation = currentAngle;
+                //     
+                //     // Remove missiles that are off screen or have lived too long
+                //     if (missile.x < -50 || missile.x > this.gameWidth + 50 || 
+                //         missile.y < -50 || missile.y > this.gameHeight + 50 ||
+                //         missile.life > 5000) { // 5 second max lifetime
+                //         this.missiles.splice(index, 1);
+                //     }
+                // });
                 
                 // Update super coin timer
                 if (this.superCoinActive) {
@@ -4779,8 +4798,8 @@
                 // Draw oil cans
                 this.drawOilCans();
 
-                // Draw missiles
-                this.drawMissiles();
+                // Draw missiles - DISABLED (removes red dots that freeze gameplay)
+                // this.drawMissiles();
 
                 // Draw robot
                 this.drawRobot();
@@ -5248,6 +5267,16 @@
             }
 
             drawMissiles() {
+                // MISSILES DISABLED - NO RED DOTS WILL BE DRAWN
+                // This prevents red dots (missiles) from appearing and freezing gameplay
+                // Clear all missiles to prevent any red dots
+                if (this.missiles && this.missiles.length > 0) {
+                    this.missiles = [];
+                }
+                return;
+                
+                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
+                /*
                 this.missiles.forEach(missile => {
                     this.ctx.save();
                     this.ctx.translate(missile.x, missile.y);
