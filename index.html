@@ -3648,6 +3648,10 @@
                 } else if (healthPercent < 0.9 && boss.phase < 1) {
                     boss.phase = 1; // Active phase
                 }
+                } catch (error) {
+                    console.error('Error in updateBoss:', error);
+                    // Don't freeze - just log the error
+                }
             }
 
             bossAttack(boss) {
