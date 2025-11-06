@@ -1372,7 +1372,9 @@
 
                 // Update obstacles
                 let currentSpeed = this.obstacleSpeed;
-                if (this.rocketActive) {
+                if (this.freezeActive) {
+                    currentSpeed = 0; // Freeze obstacles
+                } else if (this.rocketActive) {
                     currentSpeed = this.obstacleSpeed * this.rocketSpeedMultiplier; // Slow motion
                 } else if (this.rocketBoostActive) {
                     currentSpeed = this.obstacleSpeed * this.rocketBoostSpeedMultiplier; // Speed boost
@@ -1383,7 +1385,8 @@
                         this.obstacles.splice(index, 1);
                         // Only score if not invincible (robot must go through untouched)
                         if (!this.invincible) {
-                            this.score++;
+                            const points = this.doublePointsActive ? 2 : 1;
+                            this.score += points;
                             this.scoreElement.textContent = this.score;
                             this.checkLevelUp();
                         }
@@ -1600,6 +1603,54 @@
                             boost.collected = true;
                             this.collectRocketBoost();
                             this.rocketBoosts.splice(index, 1);
+                        }
+                    }
+                });
+
+                // Check magnet collisions
+                this.magnets.forEach((magnet, index) => {
+                    if (!magnet.collected) {
+                        const distance = Math.sqrt(
+                            Math.pow(this.robot.x - magnet.x, 2) + 
+                            Math.pow(this.robot.y - magnet.y, 2)
+                        );
+                        if (distance < (this.robot.width / 2 + magnet.size)) {
+                            magnet.collected = true;
+                            this.activateMagnet();
+                            this.magnets.splice(index, 1);
+                            this.playSound('coin');
+                        }
+                    }
+                });
+
+                // Check freeze collisions
+                this.freezes.forEach((freeze, index) => {
+                    if (!freeze.collected) {
+                        const distance = Math.sqrt(
+                            Math.pow(this.robot.x - freeze.x, 2) + 
+                            Math.pow(this.robot.y - freeze.y, 2)
+                        );
+                        if (distance < (this.robot.width / 2 + freeze.size)) {
+                            freeze.collected = true;
+                            this.activateFreeze();
+                            this.freezes.splice(index, 1);
+                            this.playSound('shield');
+                        }
+                    }
+                });
+
+                // Check double points collisions
+                this.doublePoints.forEach((doublePoint, index) => {
+                    if (!doublePoint.collected) {
+                        const distance = Math.sqrt(
+                            Math.pow(this.robot.x - doublePoint.x, 2) + 
+                            Math.pow(this.robot.y - doublePoint.y, 2)
+                        );
+                        if (distance < (this.robot.width / 2 + doublePoint.size)) {
+                            doublePoint.collected = true;
+                            this.activateDoublePoints();
+                            this.doublePoints.splice(index, 1);
+                            this.playSound('superCoin');
                         }
                     }
                 });
@@ -1917,6 +1968,87 @@
                         this.createCoin();
                     }, i * 200); // Staggered creation
                 }
+            }
+
+            activateMagnet() {
+                this.magnetActive = true;
+                this.magnetTimeLeft = 5000; // 5 seconds
+                this.showMagnetEffect();
+            }
+
+            activateFreeze() {
+                this.freezeActive = true;
+                this.freezeTimeLeft = 4000; // 4 seconds
+                this.showFreezeEffect();
+            }
+
+            activateDoublePoints() {
+                this.doublePointsActive = true;
+                this.doublePointsTimeLeft = 10000; // 10 seconds
+                this.showDoublePointsEffect();
+            }
+
+            showMagnetEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#E74C3C';
+                effect.style.fontSize = '32px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '🧲 MAGNET!';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 500);
+            }
+
+            showFreezeEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#3498DB';
+                effect.style.fontSize = '32px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '❄️ FREEZE!';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 500);
+            }
+
+            showDoublePointsEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#F39C12';
+                effect.style.fontSize = '32px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '✖️ DOUBLE POINTS!';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 500);
             }
 
             showSuperCoinEffect() {
@@ -2521,6 +2653,24 @@
                     this.createRocketBoost();
                     this.lastRocketBoostTime = now;
                 }
+                
+                // Generate magnets
+                if (now - this.lastMagnetTime > this.magnetInterval) {
+                    this.createMagnet();
+                    this.lastMagnetTime = now;
+                }
+                
+                // Generate freezes
+                if (now - this.lastFreezeTime > this.freezeInterval) {
+                    this.createFreeze();
+                    this.lastFreezeTime = now;
+                }
+                
+                // Generate double points
+                if (now - this.lastDoublePointsTime > this.doublePointsInterval) {
+                    this.createDoublePoints();
+                    this.lastDoublePointsTime = now;
+                }
             }
 
             createCoin() {
@@ -2604,6 +2754,51 @@
                     velocity: {
                         x: (Math.random() - 0.5) * 2,
                         y: (Math.random() - 0.5) * 2
+                    },
+                    rotation: 0,
+                    collected: false,
+                    glow: 0
+                });
+            }
+
+            createMagnet() {
+                this.magnets.push({
+                    x: Math.random() * (this.gameWidth - 100) + 50,
+                    y: Math.random() * (this.gameHeight - 200) + 100,
+                    size: 22,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 1.5,
+                        y: (Math.random() - 0.5) * 1.5
+                    },
+                    rotation: 0,
+                    collected: false,
+                    glow: 0
+                });
+            }
+
+            createFreeze() {
+                this.freezes.push({
+                    x: Math.random() * (this.gameWidth - 100) + 50,
+                    y: Math.random() * (this.gameHeight - 200) + 100,
+                    size: 24,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 1.5,
+                        y: (Math.random() - 0.5) * 1.5
+                    },
+                    rotation: 0,
+                    collected: false,
+                    glow: 0
+                });
+            }
+
+            createDoublePoints() {
+                this.doublePoints.push({
+                    x: Math.random() * (this.gameWidth - 100) + 50,
+                    y: Math.random() * (this.gameHeight - 200) + 100,
+                    size: 26,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 1.5,
+                        y: (Math.random() - 0.5) * 1.5
                     },
                     rotation: 0,
                     collected: false,
@@ -2743,6 +2938,110 @@
                         boost.y = Math.max(boost.size, Math.min(this.gameHeight - 100, boost.y));
                     }
                 });
+
+                // Update magnets
+                this.magnets.forEach((magnet, index) => {
+                    if (!magnet.collected) {
+                        magnet.x += magnet.velocity.x;
+                        magnet.y += magnet.velocity.y;
+                        magnet.rotation += 0.15;
+                        magnet.glow += 0.1;
+                        
+                        // Bounce off edges
+                        if (magnet.x <= magnet.size || magnet.x >= this.gameWidth - magnet.size) {
+                            magnet.velocity.x *= -1;
+                        }
+                        if (magnet.y <= magnet.size || magnet.y >= this.gameHeight - 100) {
+                            magnet.velocity.y *= -1;
+                        }
+                        
+                        // Keep within bounds
+                        magnet.x = Math.max(magnet.size, Math.min(this.gameWidth - magnet.size, magnet.x));
+                        magnet.y = Math.max(magnet.size, Math.min(this.gameHeight - 100, magnet.y));
+                    }
+                });
+
+                // Update freezes
+                this.freezes.forEach((freeze, index) => {
+                    if (!freeze.collected) {
+                        freeze.x += freeze.velocity.x;
+                        freeze.y += freeze.velocity.y;
+                        freeze.rotation += 0.12;
+                        freeze.glow += 0.1;
+                        
+                        // Bounce off edges
+                        if (freeze.x <= freeze.size || freeze.x >= this.gameWidth - freeze.size) {
+                            freeze.velocity.x *= -1;
+                        }
+                        if (freeze.y <= freeze.size || freeze.y >= this.gameHeight - 100) {
+                            freeze.velocity.y *= -1;
+                        }
+                        
+                        // Keep within bounds
+                        freeze.x = Math.max(freeze.size, Math.min(this.gameWidth - freeze.size, freeze.x));
+                        freeze.y = Math.max(freeze.size, Math.min(this.gameHeight - 100, freeze.y));
+                    }
+                });
+
+                // Update double points
+                this.doublePoints.forEach((doublePoint, index) => {
+                    if (!doublePoint.collected) {
+                        doublePoint.x += doublePoint.velocity.x;
+                        doublePoint.y += doublePoint.velocity.y;
+                        doublePoint.rotation += 0.1;
+                        doublePoint.glow += 0.1;
+                        
+                        // Bounce off edges
+                        if (doublePoint.x <= doublePoint.size || doublePoint.x >= this.gameWidth - doublePoint.size) {
+                            doublePoint.velocity.x *= -1;
+                        }
+                        if (doublePoint.y <= doublePoint.size || doublePoint.y >= this.gameHeight - 100) {
+                            doublePoint.velocity.y *= -1;
+                        }
+                        
+                        // Keep within bounds
+                        doublePoint.x = Math.max(doublePoint.size, Math.min(this.gameWidth - doublePoint.size, doublePoint.x));
+                        doublePoint.y = Math.max(doublePoint.size, Math.min(this.gameHeight - 100, doublePoint.y));
+                    }
+                });
+
+                // Update magnet timer and attract coins
+                if (this.magnetActive) {
+                    this.magnetTimeLeft -= 16;
+                    if (this.magnetTimeLeft <= 0) {
+                        this.magnetActive = false;
+                    } else {
+                        // Attract coins to robot
+                        this.coins.forEach(coin => {
+                            if (!coin.collected) {
+                                const dx = this.robot.x - coin.x;
+                                const dy = this.robot.y - coin.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                if (distance > 0 && distance < 200) {
+                                    const pullStrength = (200 - distance) / 200 * 0.3;
+                                    coin.velocity.x += (dx / distance) * pullStrength;
+                                    coin.velocity.y += (dy / distance) * pullStrength;
+                                }
+                            }
+                        });
+                    }
+                }
+
+                // Update freeze timer
+                if (this.freezeActive) {
+                    this.freezeTimeLeft -= 16;
+                    if (this.freezeTimeLeft <= 0) {
+                        this.freezeActive = false;
+                    }
+                }
+
+                // Update double points timer
+                if (this.doublePointsActive) {
+                    this.doublePointsTimeLeft -= 16;
+                    if (this.doublePointsTimeLeft <= 0) {
+                        this.doublePointsActive = false;
+                    }
+                }
                 
                 // Update super coins
                 this.superCoins.forEach((superCoin, index) => {
@@ -3139,6 +3438,102 @@
                         this.ctx.arc(0, 0, boost.size * 1.3, 0, Math.PI * 2);
                         this.ctx.stroke();
                         this.ctx.globalAlpha = 1;
+                        
+                        this.ctx.restore();
+                    }
+                });
+            }
+
+            drawMagnets() {
+                this.magnets.forEach(magnet => {
+                    if (!magnet.collected) {
+                        this.ctx.save();
+                        this.ctx.translate(magnet.x, magnet.y);
+                        this.ctx.rotate(magnet.rotation);
+                        
+                        const glowIntensity = Math.sin(magnet.glow) * 0.3 + 0.7;
+                        this.ctx.shadowColor = '#E74C3C';
+                        this.ctx.shadowBlur = 12 + Math.sin(magnet.glow) * 4;
+                        
+                        // Magnet body (red gradient)
+                        const gradient = this.ctx.createLinearGradient(-magnet.size * 0.5, 0, magnet.size * 0.5, 0);
+                        gradient.addColorStop(0, '#E74C3C');
+                        gradient.addColorStop(1, '#C0392B');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, magnet.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        // Magnet symbol
+                        this.ctx.fillStyle = '#FFFFFF';
+                        this.ctx.font = `bold ${magnet.size * 0.7}px Arial`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText('🧲', 0, 0);
+                        
+                        this.ctx.restore();
+                    }
+                });
+            }
+
+            drawFreezes() {
+                this.freezes.forEach(freeze => {
+                    if (!freeze.collected) {
+                        this.ctx.save();
+                        this.ctx.translate(freeze.x, freeze.y);
+                        this.ctx.rotate(freeze.rotation);
+                        
+                        const glowIntensity = Math.sin(freeze.glow) * 0.3 + 0.7;
+                        this.ctx.shadowColor = '#3498DB';
+                        this.ctx.shadowBlur = 14 + Math.sin(freeze.glow) * 4;
+                        
+                        // Freeze body (blue gradient)
+                        const gradient = this.ctx.createLinearGradient(-freeze.size * 0.5, 0, freeze.size * 0.5, 0);
+                        gradient.addColorStop(0, '#3498DB');
+                        gradient.addColorStop(1, '#2980B9');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, freeze.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        // Freeze symbol
+                        this.ctx.fillStyle = '#FFFFFF';
+                        this.ctx.font = `bold ${freeze.size * 0.7}px Arial`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText('❄️', 0, 0);
+                        
+                        this.ctx.restore();
+                    }
+                });
+            }
+
+            drawDoublePoints() {
+                this.doublePoints.forEach(doublePoint => {
+                    if (!doublePoint.collected) {
+                        this.ctx.save();
+                        this.ctx.translate(doublePoint.x, doublePoint.y);
+                        this.ctx.rotate(doublePoint.rotation);
+                        
+                        const glowIntensity = Math.sin(doublePoint.glow) * 0.3 + 0.7;
+                        this.ctx.shadowColor = '#F39C12';
+                        this.ctx.shadowBlur = 16 + Math.sin(doublePoint.glow) * 5;
+                        
+                        // Double points body (orange gradient)
+                        const gradient = this.ctx.createLinearGradient(-doublePoint.size * 0.5, 0, doublePoint.size * 0.5, 0);
+                        gradient.addColorStop(0, '#F39C12');
+                        gradient.addColorStop(1, '#E67E22');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, doublePoint.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        // Double points symbol
+                        this.ctx.fillStyle = '#FFFFFF';
+                        this.ctx.font = `bold ${doublePoint.size * 0.6}px Arial`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText('✖️', 0, 0);
                         
                         this.ctx.restore();
                     }
