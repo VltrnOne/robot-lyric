@@ -1711,6 +1711,10 @@
                     if (this.bosses) {
                         this.bosses = [];
                     }
+                    // Clear all missiles (red dots) to prevent freezing
+                    if (this.missiles) {
+                        this.missiles = [];
+                    }
                     if (this.instructionsElement) {
                         this.instructionsElement.style.display = 'none';
                     }
