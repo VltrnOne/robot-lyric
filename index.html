@@ -1043,15 +1043,33 @@
 
             setupEventListeners() {
                 // Mouse click
-                this.canvas.addEventListener('click', () => {
-                    // Resume audio context on first user interaction
-                    if (!this.audioContextReady && this.audioContext) {
-                        this.resumeAudioContext();
-                    }
-                    if (this.gameState === 'waiting') {
-                        this.startGame();
-                    } else if (this.gameState === 'playing') {
-                        this.jump();
+                this.canvas.addEventListener('click', (e) => {
+                    try {
+                        // Resume audio context on first user interaction
+                        if (!this.audioContextReady && this.audioContext) {
+                            this.resumeAudioContext();
+                        }
+                        
+                        // Only handle clicks if not in level editor mode
+                        if (this.levelEditorActive) {
+                            // Level editor handles clicks separately
+                            return;
+                        }
+                        
+                        // Defer to prevent blocking
+                        setTimeout(() => {
+                            try {
+                                if (this.gameState === 'waiting') {
+                                    this.startGame();
+                                } else if (this.gameState === 'playing') {
+                                    this.jump();
+                                }
+                            } catch (error) {
+                                console.error('Error in canvas click handler:', error);
+                            }
+                        }, 0);
+                    } catch (error) {
+                        console.error('Error in canvas click:', error);
                     }
                 });
 
