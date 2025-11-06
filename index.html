@@ -3527,6 +3527,10 @@
                 }
                 
                 // Update boss projectiles (safe iteration - collect items to remove first)
+                if (!boss.projectiles || !Array.isArray(boss.projectiles)) {
+                    boss.projectiles = [];
+                }
+                
                 const projectilesToRemove = [];
                 boss.projectiles.forEach((proj, index) => {
                     if (!proj || typeof proj.x !== 'number' || typeof proj.y !== 'number') {
@@ -3555,13 +3559,25 @@
                             
                             if (distance < collisionDistance) {
                                 if (!this.invincible) {
-                                    this.robotPower = Math.max(0, (this.robotPower || 100) - 15);
-                                    if (typeof this.updatePowerBar === 'function') {
-                                        this.updatePowerBar();
-                                    }
-                                    if (typeof this.playSound === 'function') {
-                                        this.playSound('damage');
-                                    }
+                                    // Mark projectile for removal
+                                    projectilesToRemove.push(index);
+                                    
+                                    // Defer damage handling to prevent blocking
+                                    setTimeout(() => {
+                                        try {
+                                            this.robotPower = Math.max(0, (this.robotPower || 100) - 15);
+                                            if (typeof this.updatePowerBar === 'function') {
+                                                this.updatePowerBar();
+                                            }
+                                            if (typeof this.playSound === 'function') {
+                                                this.playSound('damage');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error in deferred projectile damage:', error);
+                                        }
+                                    }, 0);
+                                } else {
+                                    // If invincible, just remove the projectile
                                     projectilesToRemove.push(index);
                                 }
                             }
@@ -3590,23 +3606,30 @@
                         const collisionDistance = (this.robot.width || 20) / 2 + (boss.width || 80) / 2;
                         
                         if (distance < collisionDistance) {
-                            if (!this.invincible) {
-                                this.robotPower = Math.max(0, (this.robotPower || 100) - 20);
-                                if (typeof this.updatePowerBar === 'function') {
-                                    this.updatePowerBar();
+                            // Defer collision handling to prevent blocking
+                            setTimeout(() => {
+                                try {
+                                    if (!this.invincible) {
+                                        this.robotPower = Math.max(0, (this.robotPower || 100) - 20);
+                                        if (typeof this.updatePowerBar === 'function') {
+                                            this.updatePowerBar();
+                                        }
+                                        if (typeof this.playSound === 'function') {
+                                            this.playSound('damage');
+                                        }
+                                    } else {
+                                        // If invincible, damage boss on contact
+                                        if (typeof this.damageBoss === 'function') {
+                                            this.damageBoss(5);
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error in deferred boss collision:', error);
                                 }
-                                if (typeof this.playSound === 'function') {
-                                    this.playSound('damage');
-                                }
-                            } else {
-                                // If invincible, damage boss on contact
-                                if (typeof this.damageBoss === 'function') {
-                                    this.damageBoss(5);
-                                }
-                            }
+                            }, 0);
                         }
                     } catch (error) {
-                        console.error('Error in boss collision:', error);
+                        console.error('Error in boss collision check:', error);
                     }
                 }
                 
