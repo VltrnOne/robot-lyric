@@ -3630,6 +3630,9 @@
             }
 
             createMagnet() {
+                // MAGNETS DISABLED - NO RED DOTS WILL BE CREATED
+                return;
+                /*
                 this.magnets.push({
                     x: Math.random() * (this.gameWidth - 100) + 50,
                     y: Math.random() * (this.gameHeight - 200) + 100,
@@ -3642,6 +3645,7 @@
                     collected: false,
                     glow: 0
                 });
+                */
             }
 
             createFreeze() {
@@ -4233,14 +4237,14 @@
                         } else if (randomPowerUp === 'magnet') {
                             // MAGNETS DISABLED - NO RED DOTS
                             // this.magnets.push({
-                                x: x,
-                                y: y,
-                                size: 22,
-                                velocity: { x: 0, y: 0 },
-                                rotation: 0,
-                                collected: false,
-                                glow: 0
-                            });
+                            //     x: x,
+                            //     y: y,
+                            //     size: 22,
+                            //     velocity: { x: 0, y: 0 },
+                            //     rotation: 0,
+                            //     collected: false,
+                            //     glow: 0
+                            // });
                         } else if (randomPowerUp === 'freeze') {
                             this.freezes.push({
                                 x: x,
