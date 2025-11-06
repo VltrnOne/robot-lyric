@@ -32,8 +32,14 @@ Your repository is now connected and pushed to GitHub!
 
 ## 🎮 Your Live Game URLs
 
-Once deployed (1-2 minutes), your game will be live at:
+Once deployed and DNS configured, your game will be live at:
 
+- **Main Game**: https://vltrngames.com/
+- **Game Portal**: https://vltrngames.com/portal.html
+
+**Note**: Custom domain `vltrngames.com` is configured. See `CUSTOM_DOMAIN_SETUP.md` for DNS configuration instructions.
+
+**Temporary GitHub Pages URL** (until DNS propagates):
 - **Main Game**: https://vltrnone.github.io/robot-lyric/
 - **Game Portal**: https://vltrnone.github.io/robot-lyric/portal.html
 
