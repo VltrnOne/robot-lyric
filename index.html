@@ -3706,9 +3706,17 @@
                 
                 this.showBossWarning();
                 this.playSound('rocket'); // Boss spawn sound
+                */
             }
 
             updateBoss() {
+                // BOSS UPDATE DISABLED - NO RED DOTS
+                // Clear boss data immediately
+                this.currentBoss = null;
+                this.bossActive = false;
+                this.bosses = [];
+                return;
+                /*
                 try {
                     if (!this.currentBoss) return;
                     
