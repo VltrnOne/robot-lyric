@@ -1782,6 +1782,12 @@
 
             restart() {
                 this.gameState = 'nameInput';
+                // Clear any existing bosses and projectiles
+                this.currentBoss = null;
+                this.bossActive = false;
+                if (this.bosses) {
+                    this.bosses = [];
+                }
                 // Hide mobile controls when restarting
                 this.updateMobileControlsVisibility();
                 this.score = 0;
@@ -4051,6 +4057,14 @@
 
             drawBoss() {
                 // Boss mode completely disabled - no drawing
+                // Force clear any existing boss data
+                if (this.currentBoss) {
+                    this.currentBoss = null;
+                    this.bossActive = false;
+                }
+                if (this.bosses && this.bosses.length > 0) {
+                    this.bosses = [];
+                }
                 return;
                 if (!this.bossActive || !this.currentBoss) return;
                 
