@@ -3564,9 +3564,32 @@
                             const collisionDistance = (this.robot.width || 20) / 2 + (proj.size || 10);
                             
                             if (distance < collisionDistance) {
+                                // Check if this projectile has already hit (prevent multiple hits from same projectile)
+                                const projectileId = `${proj.x}_${proj.y}_${index}`;
+                                if (this.hitProjectiles && this.hitProjectiles.has(projectileId)) {
+                                    // Already hit, skip
+                                    return;
+                                }
+                                
+                                // Check cooldown to prevent rapid-fire hits
+                                const now = Date.now();
+                                if (now - this.lastProjectileHitTime < this.projectileHitCooldown) {
+                                    // Still in cooldown, skip this hit
+                                    return;
+                                }
+                                
                                 if (!this.invincible) {
+                                    // Mark projectile as hit
+                                    if (!this.hitProjectiles) {
+                                        this.hitProjectiles = new Set();
+                                    }
+                                    this.hitProjectiles.add(projectileId);
+                                    
                                     // Mark projectile for removal
                                     projectilesToRemove.push(index);
+                                    
+                                    // Update cooldown
+                                    this.lastProjectileHitTime = now;
                                     
                                     // Defer damage handling to prevent blocking
                                     setTimeout(() => {
@@ -3612,6 +3635,16 @@
                         const collisionDistance = (this.robot.width || 20) / 2 + (boss.width || 80) / 2;
                         
                         if (distance < collisionDistance) {
+                            // Check cooldown to prevent rapid-fire hits
+                            const now = Date.now();
+                            if (now - this.lastBossHitTime < this.bossHitCooldown) {
+                                // Still in cooldown, skip this hit
+                                return;
+                            }
+                            
+                            // Update cooldown
+                            this.lastBossHitTime = now;
+                            
                             // Defer collision handling to prevent blocking
                             setTimeout(() => {
                                 try {
