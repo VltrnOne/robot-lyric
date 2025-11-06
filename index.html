@@ -4056,16 +4056,33 @@
             }
 
             drawBoss() {
-                // Boss mode completely disabled - no drawing
-                // Force clear any existing boss data
+                // BOSS MODE COMPLETELY DISABLED - NO RED DOTS WILL BE DRAWN
+                // This function is disabled to prevent any red dots (boss projectiles) from appearing
+                
+                // Force clear any existing boss data and projectiles
                 if (this.currentBoss) {
+                    // Clear all projectiles
+                    if (this.currentBoss.projectiles) {
+                        this.currentBoss.projectiles = [];
+                    }
                     this.currentBoss = null;
                     this.bossActive = false;
                 }
                 if (this.bosses && this.bosses.length > 0) {
+                    // Clear all bosses and their projectiles
+                    this.bosses.forEach(boss => {
+                        if (boss && boss.projectiles) {
+                            boss.projectiles = [];
+                        }
+                    });
                     this.bosses = [];
                 }
+                
+                // Return immediately - no drawing will occur
                 return;
+                
+                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
+                /*
                 if (!this.bossActive || !this.currentBoss) return;
                 
                 const boss = this.currentBoss;
@@ -4124,7 +4141,7 @@
                 this.ctx.lineWidth = 2;
                 this.ctx.strokeRect(barX, barY, barWidth, barHeight);
                 
-                // Draw boss projectiles
+                // Draw boss projectiles - THIS IS WHAT CREATES RED DOTS - DISABLED
                 boss.projectiles.forEach(proj => {
                     this.ctx.save();
                     this.ctx.translate(proj.x, proj.y);
@@ -4136,6 +4153,7 @@
                     this.ctx.fill();
                     this.ctx.restore();
                 });
+                */
             }
 
             // Level Editor System
@@ -4736,7 +4754,8 @@
                 // Draw obstacles
                 this.drawObstacles();
 
-                // Draw boss - DISABLED (boss mode removed)
+                // Draw boss - COMPLETELY DISABLED (boss mode removed, no red dots)
+                // Boss drawing is disabled to prevent any red dots from appearing
                 // this.drawBoss();
 
                 // Draw power-ups
