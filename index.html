@@ -667,6 +667,19 @@
                         <div class="bg-option" data-bg="night" style="background: linear-gradient(to bottom, #1A1A2E 0%, #16213E 50%, #0F3460 100%);"></div>
                     </div>
                 </div>
+                <div class="setting-group" style="margin-top: 20px;">
+                    <label>🔊 Music Volume: <span id="musicVolumeValue">30</span>%</label>
+                    <input type="range" id="musicVolumeSlider" min="0" max="100" value="30" style="width: 100%; margin-top: 5px;">
+                </div>
+                <div class="setting-group" style="margin-top: 15px;">
+                    <label>🔔 Sound Effects Volume: <span id="soundVolumeValue">40</span>%</label>
+                    <input type="range" id="soundVolumeSlider" min="0" max="100" value="40" style="width: 100%; margin-top: 5px;">
+                </div>
+                <div class="setting-group" style="margin-top: 15px;">
+                    <label>
+                        <input type="checkbox" id="soundEnabledCheckbox" checked> Enable Sound
+                    </label>
+                </div>
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button id="saveSettings" style="flex: 1; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 8px; cursor: pointer;">Save</button>
                     <button id="showLeaderboard" style="flex: 1; padding: 10px; background: #F39C12; color: white; border: none; border-radius: 8px; cursor: pointer;">Leaderboard</button>
@@ -855,6 +868,10 @@
                 this.musicPattern = 0;
                 this.soundEnabled = true;
                 this.audioContextReady = false;
+                this.musicVolume = 0.3;
+                this.soundEffectVolume = 0.4;
+                this.lastAutoSaveTime = 0;
+                this.autoSaveInterval = 30000; // 30 seconds
 
                 // Player and settings data
                 this.playerName = 'Player';
@@ -1145,6 +1162,42 @@
                         e.preventDefault();
                         if (this.gameState === 'playing' && this.rocketBoostActive) {
                             this.stopRocketBoost();
+                        }
+                    });
+                }
+
+                // Sound customization controls
+                const musicVolumeSlider = document.getElementById('musicVolumeSlider');
+                const soundVolumeSlider = document.getElementById('soundVolumeSlider');
+                const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox');
+                const musicVolumeValue = document.getElementById('musicVolumeValue');
+                const soundVolumeValue = document.getElementById('soundVolumeValue');
+
+                if (musicVolumeSlider) {
+                    musicVolumeSlider.addEventListener('input', (e) => {
+                        this.musicVolume = e.target.value / 100;
+                        if (musicVolumeValue) {
+                            musicVolumeValue.textContent = e.target.value;
+                        }
+                    });
+                }
+
+                if (soundVolumeSlider) {
+                    soundVolumeSlider.addEventListener('input', (e) => {
+                        this.soundEffectVolume = e.target.value / 100;
+                        if (soundVolumeValue) {
+                            soundVolumeValue.textContent = e.target.value;
+                        }
+                    });
+                }
+
+                if (soundEnabledCheckbox) {
+                    soundEnabledCheckbox.addEventListener('change', (e) => {
+                        this.soundEnabled = e.target.checked;
+                        if (this.soundEnabled && !this.musicPlaying) {
+                            this.startMusic();
+                        } else if (!this.soundEnabled) {
+                            this.musicPlaying = false;
                         }
                     });
                 }
@@ -2242,6 +2295,22 @@
                     const settings = JSON.parse(savedSettings);
                     this.playerName = settings.playerName || 'Player';
                     this.currentBackground = settings.background || 'day';
+                    this.musicVolume = settings.musicVolume !== undefined ? settings.musicVolume : 0.3;
+                    this.soundEffectVolume = settings.soundEffectVolume !== undefined ? settings.soundEffectVolume : 0.4;
+                    this.soundEnabled = settings.soundEnabled !== undefined ? settings.soundEnabled : true;
+                    
+                    // Update UI sliders
+                    const musicVolumeSlider = document.getElementById('musicVolumeSlider');
+                    const soundVolumeSlider = document.getElementById('soundVolumeSlider');
+                    const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox');
+                    const musicVolumeValue = document.getElementById('musicVolumeValue');
+                    const soundVolumeValue = document.getElementById('soundVolumeValue');
+                    
+                    if (musicVolumeSlider) musicVolumeSlider.value = this.musicVolume * 100;
+                    if (soundVolumeSlider) soundVolumeSlider.value = this.soundEffectVolume * 100;
+                    if (soundEnabledCheckbox) soundEnabledCheckbox.checked = this.soundEnabled;
+                    if (musicVolumeValue) musicVolumeValue.textContent = Math.round(this.musicVolume * 100);
+                    if (soundVolumeValue) soundVolumeValue.textContent = Math.round(this.soundEffectVolume * 100);
                     
                     // If we have a saved name, skip name input screen
                     if (this.playerName !== 'Player') {
@@ -2253,12 +2322,82 @@
             saveSettings() {
                 const settings = {
                     playerName: this.playerName,
-                    background: this.currentBackground
+                    background: this.currentBackground,
+                    musicVolume: this.musicVolume,
+                    soundEffectVolume: this.soundEffectVolume,
+                    soundEnabled: this.soundEnabled
                 };
                 
                 localStorage.setItem('intheair_settings', JSON.stringify(settings));
                 this.updateUI();
                 this.closeSettings();
+            }
+
+            // Save/Load Game States
+            saveGameState() {
+                const gameState = {
+                    score: this.score,
+                    level: this.level,
+                    shieldCount: this.shieldCount,
+                    robotPower: this.robotPower,
+                    robotUpgradeLevel: this.robotUpgradeLevel,
+                    spendingCurrency: this.spendingCurrency,
+                    achievements: this.achievements,
+                    robot: {
+                        x: this.robot.x,
+                        y: this.robot.y,
+                        velocity: this.robot.velocity
+                    },
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('robot_lyric_game_state', JSON.stringify(gameState));
+                console.log('Game state saved!');
+            }
+
+            loadGameState() {
+                const savedState = localStorage.getItem('robot_lyric_game_state');
+                if (!savedState) return false;
+                
+                try {
+                    const gameState = JSON.parse(savedState);
+                    
+                    // Check if save is too old (more than 1 hour)
+                    const age = Date.now() - gameState.timestamp;
+                    if (age > 3600000) {
+                        localStorage.removeItem('robot_lyric_game_state');
+                        return false;
+                    }
+                    
+                    // Restore game state
+                    this.score = gameState.score || 0;
+                    this.level = gameState.level || 1;
+                    this.shieldCount = gameState.shieldCount || 0;
+                    this.robotPower = gameState.robotPower || 100;
+                    this.robotUpgradeLevel = gameState.robotUpgradeLevel || 0;
+                    this.spendingCurrency = gameState.spendingCurrency || 0;
+                    this.achievements = { ...this.achievements, ...(gameState.achievements || {}) };
+                    
+                    if (gameState.robot) {
+                        this.robot.x = gameState.robot.x || this.robot.x;
+                        this.robot.y = gameState.robot.y || this.robot.y;
+                        this.robot.velocity = gameState.robot.velocity || 0;
+                    }
+                    
+                    this.updateUI();
+                    console.log('Game state loaded!');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to load game state:', e);
+                    return false;
+                }
+            }
+
+            autoSave() {
+                // Auto-save every 30 seconds during gameplay
+                if (this.gameState === 'playing') {
+                    this.saveGameState();
+                }
             }
 
             showSettings() {
@@ -3152,6 +3291,14 @@
                 this.update();
                 this.draw();
                 this.updateMusic();
+                
+                // Auto-save every 30 seconds
+                const now = Date.now();
+                if (now - this.lastAutoSaveTime > this.autoSaveInterval) {
+                    this.autoSave();
+                    this.lastAutoSaveTime = now;
+                }
+                
                 requestAnimationFrame(() => this.gameLoop());
             }
 
@@ -3285,7 +3432,7 @@
                 }
                 
                 gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(volume * this.musicVolume, this.audioContext.currentTime + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
                 
                 oscillator.start(this.audioContext.currentTime);
@@ -3311,7 +3458,7 @@
                 oscillator.type = 'triangle';
                 
                 gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.02 * this.musicIntensity, this.audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(0.02 * this.musicIntensity * this.musicVolume, this.audioContext.currentTime + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.4);
                 
                 oscillator.start(this.audioContext.currentTime);
@@ -3337,7 +3484,7 @@
                 filter.frequency.setValueAtTime(200, this.audioContext.currentTime);
                 
                 gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.01 * this.musicIntensity, this.audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(0.01 * this.musicIntensity * this.musicVolume, this.audioContext.currentTime + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
                 
                 oscillator.start(this.audioContext.currentTime);
@@ -3429,9 +3576,9 @@
                 oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
                 oscillator.type = waveType;
                 
-                // Volume envelope - louder to cut through music
+                // Volume envelope - use sound effect volume setting
                 gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.4, this.audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(0.4 * this.soundEffectVolume, this.audioContext.currentTime + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration);
                 
                 oscillator.start(this.audioContext.currentTime);
