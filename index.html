@@ -4101,92 +4101,6 @@
                 }, 2000);
             }
 
-            drawBoss() {
-                // BOSS MODE COMPLETELY DISABLED - NO RED DOTS WILL BE DRAWN
-                // This function is disabled to prevent any red dots (boss projectiles) from appearing
-                
-                // Force clear any existing boss data and projectiles IMMEDIATELY
-                this.currentBoss = null;
-                this.bossActive = false;
-                this.bosses = [];
-                
-                // Return immediately - NO drawing will occur
-                return;
-                
-                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
-                /*
-                if (!this.bossActive || !this.currentBoss) return;
-                
-                const boss = this.currentBoss;
-                this.ctx.save();
-                this.ctx.translate(boss.x, boss.y);
-                this.ctx.rotate(boss.rotation);
-                
-                // Boss glow effect
-                const glowIntensity = Math.sin(boss.glow) * 0.3 + 0.7;
-                this.ctx.shadowColor = '#E74C3C';
-                this.ctx.shadowBlur = 20 + Math.sin(boss.glow) * 10;
-                
-                // Boss body (large red square with spikes)
-                this.ctx.fillStyle = '#E74C3C';
-                this.ctx.fillRect(-boss.width / 2, -boss.height / 2, boss.width, boss.height);
-                
-                // Boss spikes
-                this.ctx.fillStyle = '#C0392B';
-                for (let i = 0; i < 4; i++) {
-                    const angle = (i * Math.PI * 2 / 4) + boss.rotation;
-                    const spikeX = Math.cos(angle) * (boss.width / 2 + 10);
-                    const spikeY = Math.sin(angle) * (boss.height / 2 + 10);
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(spikeX, spikeY);
-                    this.ctx.lineTo(spikeX - 10, spikeY - 10);
-                    this.ctx.lineTo(spikeX + 10, spikeY - 10);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-                }
-                
-                // Boss eyes - REMOVED (red dots in a line)
-                // this.ctx.fillStyle = '#FF0000';
-                // this.ctx.beginPath();
-                // this.ctx.arc(-15, -10, 8, 0, Math.PI * 2);
-                // this.ctx.arc(15, -10, 8, 0, Math.PI * 2);
-                // this.ctx.fill();
-                
-                // Boss health bar
-                this.ctx.restore();
-                const barWidth = 200;
-                const barHeight = 10;
-                const barX = boss.x - barWidth / 2;
-                const barY = boss.y - boss.height / 2 - 20;
-                
-                // Health bar background
-                this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                this.ctx.fillRect(barX, barY, barWidth, barHeight);
-                
-                // Health bar fill
-                const healthPercent = this.bossHealth / this.bossMaxHealth;
-                this.ctx.fillStyle = healthPercent > 0.5 ? '#2ECC71' : (healthPercent > 0.25 ? '#F39C12' : '#E74C3C');
-                this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
-                
-                // Health bar border
-                this.ctx.strokeStyle = '#FFFFFF';
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(barX, barY, barWidth, barHeight);
-                
-                // Draw boss projectiles - THIS IS WHAT CREATES RED DOTS - DISABLED
-                boss.projectiles.forEach(proj => {
-                    this.ctx.save();
-                    this.ctx.translate(proj.x, proj.y);
-                    this.ctx.fillStyle = '#E74C3C';
-                    this.ctx.shadowColor = '#E74C3C';
-                    this.ctx.shadowBlur = 10;
-                    this.ctx.beginPath();
-                    this.ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    this.ctx.restore();
-                });
-                */
-            }
 
             // Level Editor System
             toggleLevelEditor() {
@@ -4792,9 +4706,6 @@
                 // Draw obstacles
                 this.drawObstacles();
 
-                // Draw boss - COMPLETELY DISABLED (boss mode removed, no red dots)
-                // Boss drawing is disabled to prevent any red dots from appearing
-                // this.drawBoss();
 
                 // Draw power-ups
                 this.drawPowerUps();
@@ -4805,8 +4716,6 @@
                 // Draw rocket boosts
                 this.drawRocketBoosts();
 
-                // Draw magnets - DISABLED (removes red dots)
-                // this.drawMagnets();
 
                 // Draw freezes
                 this.drawFreezes();
@@ -4817,8 +4726,6 @@
                 // Draw oil cans
                 this.drawOilCans();
 
-                // Draw missiles - DISABLED (removes red dots that freeze gameplay)
-                // this.drawMissiles();
 
                 // Draw robot
                 this.drawRobot();
@@ -5087,48 +4994,6 @@
                 });
             }
 
-            drawMagnets() {
-                // MAGNETS DISABLED - NO RED DOTS WILL BE DRAWN
-                // This prevents red dots (magnets) from appearing
-                // Clear all magnets to prevent any red dots
-                if (this.magnets && this.magnets.length > 0) {
-                    this.magnets = [];
-                }
-                return;
-                
-                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
-                /*
-                this.magnets.forEach(magnet => {
-                    if (!magnet.collected) {
-                        this.ctx.save();
-                        this.ctx.translate(magnet.x, magnet.y);
-                        this.ctx.rotate(magnet.rotation);
-                        
-                        const glowIntensity = Math.sin(magnet.glow) * 0.3 + 0.7;
-                        this.ctx.shadowColor = '#E74C3C';
-                        this.ctx.shadowBlur = 12 + Math.sin(magnet.glow) * 4;
-                        
-                        // Magnet body (red gradient)
-                        const gradient = this.ctx.createLinearGradient(-magnet.size * 0.5, 0, magnet.size * 0.5, 0);
-                        gradient.addColorStop(0, '#E74C3C');
-                        gradient.addColorStop(1, '#C0392B');
-                        this.ctx.fillStyle = gradient;
-                        this.ctx.beginPath();
-                        this.ctx.arc(0, 0, magnet.size, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        
-                        // Magnet symbol
-                        this.ctx.fillStyle = '#FFFFFF';
-                        this.ctx.font = `bold ${magnet.size * 0.7}px Arial`;
-                        this.ctx.textAlign = 'center';
-                        this.ctx.textBaseline = 'middle';
-                        this.ctx.fillText('🧲', 0, 0);
-                        
-                        this.ctx.restore();
-                    }
-                });
-                */
-            }
 
             drawFreezes() {
                 this.freezes.forEach(freeze => {
@@ -5296,57 +5161,6 @@
                 });
             }
 
-            drawMissiles() {
-                // MISSILES DISABLED - NO RED DOTS WILL BE DRAWN
-                // This prevents red dots (missiles) from appearing and freezing gameplay
-                // AGGRESSIVELY clear all missiles to prevent any red dots
-                this.missiles = [];
-                if (this.missiles && this.missiles.length > 0) {
-                    this.missiles = [];
-                }
-                return;
-                
-                // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
-                /*
-                this.missiles.forEach(missile => {
-                    this.ctx.save();
-                    this.ctx.translate(missile.x, missile.y);
-                    this.ctx.rotate(missile.rotation);
-                    
-                    // Missile glow with spiral effect
-                    this.ctx.shadowColor = '#E74C3C';
-                    this.ctx.shadowBlur = 8 + Math.sin(missile.spiralPhase) * 4;
-                    
-                    // Missile body with spiral trail
-                    this.ctx.fillStyle = '#E74C3C';
-                    this.ctx.fillRect(-missile.size, -missile.size/2, missile.size * 2, missile.size);
-                    
-                    // Missile tip
-                    this.ctx.fillStyle = '#C0392B';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(missile.size, 0);
-                    this.ctx.lineTo(missile.size * 1.5, -missile.size/2);
-                    this.ctx.lineTo(missile.size * 1.5, missile.size/2);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-                    
-                    // Spiral trail effect
-                    this.ctx.fillStyle = '#F39C12';
-                    const trailLength = 3 + Math.sin(missile.spiralPhase * 2) * 2;
-                    this.ctx.fillRect(-missile.size * trailLength, -missile.size/4, missile.size * trailLength, missile.size/2);
-                    
-                    // Spiral particles
-                    this.ctx.fillStyle = '#FF6B6B';
-                    for (let i = 0; i < 3; i++) {
-                        const particleX = -missile.size * (2 + i) + Math.cos(missile.spiralPhase + i) * 5;
-                        const particleY = Math.sin(missile.spiralPhase + i) * 3;
-                        this.ctx.fillRect(particleX, particleY, 2, 2);
-                    }
-                    
-                    this.ctx.restore();
-                });
-                */
-            }
 
             gameLoop() {
                 this.update();
