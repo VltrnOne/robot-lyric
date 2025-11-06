@@ -1061,63 +1061,81 @@
                 let isTouching = false;
                 
                 this.canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    // Resume audio context on first user interaction
-                    if (!this.audioContextReady && this.audioContext) {
-                        this.resumeAudioContext();
-                    }
-                    
-                    const touch = e.touches[0];
-                    touchStartY = touch.clientY;
-                    touchStartX = touch.clientX;
-                    isTouching = true;
-                    
-                    if (this.gameState === 'waiting') {
-                        this.startGame();
-                    } else if (this.gameState === 'playing') {
-                        this.jump();
+                    try {
+                        e.preventDefault();
+                        // Resume audio context on first user interaction
+                        if (!this.audioContextReady && this.audioContext) {
+                            this.resumeAudioContext();
+                        }
+                        
+                        const touch = e.touches && e.touches[0];
+                        if (!touch) return;
+                        
+                        touchStartY = touch.clientY;
+                        touchStartX = touch.clientX;
+                        isTouching = true;
+                        
+                        // Defer game actions to prevent blocking
+                        setTimeout(() => {
+                            try {
+                                if (this.gameState === 'waiting') {
+                                    this.startGame();
+                                } else if (this.gameState === 'playing') {
+                                    this.jump();
+                                }
+                            } catch (error) {
+                                console.error('Error in touchstart game action:', error);
+                            }
+                        }, 0);
+                    } catch (error) {
+                        console.error('Error in touchstart handler:', error);
                     }
                 }, { passive: false });
                 
                 this.canvas.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    if (!isTouching || this.gameState !== 'playing') return;
-                    
-                    const touch = e.touches[0];
-                    const deltaY = touch.clientY - touchStartY;
-                    const deltaX = touch.clientX - touchStartX;
-                    
-                    // Vertical movement (jump/fall)
-                    if (Math.abs(deltaY) > 10) {
-                        if (deltaY < 0) {
-                            // Swipe up - jump
-                            this.robot.velocity = -this.jumpForce;
-                        } else {
-                            // Swipe down - fall faster
-                            this.robot.velocity = Math.min(this.robot.velocity + 2, 10);
+                    try {
+                        e.preventDefault();
+                        if (!isTouching || this.gameState !== 'playing') return;
+                        
+                        const touch = e.touches && e.touches[0];
+                        if (!touch || !this.robot) return;
+                        
+                        const deltaY = touch.clientY - touchStartY;
+                        const deltaX = touch.clientX - touchStartX;
+                        
+                        // Vertical movement (jump/fall)
+                        if (Math.abs(deltaY) > 10) {
+                            if (deltaY < 0) {
+                                // Swipe up - jump
+                                this.robot.velocity = -this.jumpForce;
+                            } else {
+                                // Swipe down - fall faster
+                                this.robot.velocity = Math.min((this.robot.velocity || 0) + 2, 10);
+                            }
+                            touchStartY = touch.clientY;
                         }
-                        touchStartY = touch.clientY;
-                    }
-                    
-                    // Horizontal movement
-                    if (Math.abs(deltaX) > 10) {
-                        const newX = this.robot.x + (deltaX * 0.5);
-                        this.robot.x = Math.max(50, Math.min(this.gameWidth - 50, newX));
-                        touchStartX = touch.clientX;
+                        
+                        // Horizontal movement
+                        if (Math.abs(deltaX) > 10) {
+                            const newX = (this.robot.x || 0) + (deltaX * 0.5);
+                            this.robot.x = Math.max(50, Math.min(this.gameWidth - 50, newX));
+                            touchStartX = touch.clientX;
+                        }
+                    } catch (error) {
+                        console.error('Error in touchmove handler:', error);
                     }
                 }, { passive: false });
                 
                 this.canvas.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    isTouching = false;
-                }, { passive: false });
-                
-                // Prevent scrolling on mobile
-                this.canvas.addEventListener('touchmove', (e) => {
-                    if (this.gameState === 'playing') {
+                    try {
                         e.preventDefault();
+                        isTouching = false;
+                    } catch (error) {
+                        console.error('Error in touchend handler:', error);
                     }
                 }, { passive: false });
+                
+                // Prevent scrolling on mobile (removed duplicate - already handled above)
 
                 // Keyboard controls
                 // Keyup handler for rocket boost (stop when B is released)
@@ -1254,45 +1272,109 @@
 
                 if (mobileLeft) {
                     mobileLeft.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        if (this.gameState === 'playing') {
-                            this.robot.x = Math.max(50, this.robot.x - 8);
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'playing' && this.robot) {
+                                        this.robot.x = Math.max(50, (this.robot.x || 0) - 8);
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile left touchstart:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile left handler:', error);
                         }
                     });
                     mobileLeft.addEventListener('touchmove', (e) => {
-                        e.preventDefault();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } catch (error) {
+                            console.error('Error in mobile left touchmove:', error);
+                        }
                     });
                     mobileLeft.addEventListener('touchend', (e) => {
-                        e.preventDefault();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } catch (error) {
+                            console.error('Error in mobile left touchend:', error);
+                        }
                     });
                 }
 
                 if (mobileRight) {
                     mobileRight.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        if (this.gameState === 'playing') {
-                            this.robot.x = Math.min(this.gameWidth - 50, this.robot.x + 8);
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'playing' && this.robot) {
+                                        this.robot.x = Math.min(this.gameWidth - 50, (this.robot.x || 0) + 8);
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile right touchstart:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile right handler:', error);
                         }
                     });
                     mobileRight.addEventListener('touchmove', (e) => {
-                        e.preventDefault();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } catch (error) {
+                            console.error('Error in mobile right touchmove:', error);
+                        }
                     });
                     mobileRight.addEventListener('touchend', (e) => {
-                        e.preventDefault();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } catch (error) {
+                            console.error('Error in mobile right touchend:', error);
+                        }
                     });
                 }
 
                 if (mobileBoost) {
                     mobileBoost.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        if (this.gameState === 'playing' && this.rocketBoostStored > 0 && !this.rocketBoostActive) {
-                            this.activateRocketBoost();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'playing' && this.rocketBoostStored > 0 && !this.rocketBoostActive) {
+                                        this.activateRocketBoost();
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile boost touchstart:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile boost handler:', error);
                         }
                     });
                     mobileBoost.addEventListener('touchend', (e) => {
-                        e.preventDefault();
-                        if (this.gameState === 'playing' && this.rocketBoostActive) {
-                            this.stopRocketBoost();
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                try {
+                                    if (this.gameState === 'playing' && this.rocketBoostActive) {
+                                        this.stopRocketBoost();
+                                    }
+                                } catch (error) {
+                                    console.error('Error in mobile boost touchend:', error);
+                                }
+                            }, 0);
+                        } catch (error) {
+                            console.error('Error in mobile boost touchend handler:', error);
                         }
                     });
                 }
