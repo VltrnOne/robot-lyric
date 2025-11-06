@@ -4093,26 +4093,12 @@
                 // BOSS MODE COMPLETELY DISABLED - NO RED DOTS WILL BE DRAWN
                 // This function is disabled to prevent any red dots (boss projectiles) from appearing
                 
-                // Force clear any existing boss data and projectiles
-                if (this.currentBoss) {
-                    // Clear all projectiles
-                    if (this.currentBoss.projectiles) {
-                        this.currentBoss.projectiles = [];
-                    }
-                    this.currentBoss = null;
-                    this.bossActive = false;
-                }
-                if (this.bosses && this.bosses.length > 0) {
-                    // Clear all bosses and their projectiles
-                    this.bosses.forEach(boss => {
-                        if (boss && boss.projectiles) {
-                            boss.projectiles = [];
-                        }
-                    });
-                    this.bosses = [];
-                }
+                // Force clear any existing boss data and projectiles IMMEDIATELY
+                this.currentBoss = null;
+                this.bossActive = false;
+                this.bosses = [];
                 
-                // Return immediately - no drawing will occur
+                // Return immediately - NO drawing will occur
                 return;
                 
                 // ALL CODE BELOW IS DISABLED - NO RED DOTS WILL BE DRAWN
