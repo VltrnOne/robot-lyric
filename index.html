@@ -1815,36 +1815,96 @@
                     }
                 });
 
-                // Check rocket collisions
-                this.rockets.forEach((rocket, index) => {
-                    if (!rocket.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - rocket.x, 2) + 
-                            Math.pow(this.robot.y - rocket.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + rocket.size)) {
-                            rocket.collected = true;
-                            this.activateRocket();
-                            this.rockets.splice(index, 1);
-                            this.playSound('rocket');
+                // Check rocket collisions (safe iteration)
+                try {
+                    const rocketsToRemove = [];
+                    const rocketsToCollect = [];
+                    
+                    this.rockets.forEach((rocket, index) => {
+                        if (rocket && !rocket.collected) {
+                            // Safe distance calculation
+                            const dx = (this.robot.x || 0) - (rocket.x || 0);
+                            const dy = (this.robot.y || 0) - (rocket.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (rocket.size || 25);
+                            
+                            if (distance < collisionDistance) {
+                                rocket.collected = true;
+                                rocketsToCollect.push(rocket);
+                                rocketsToRemove.push(index);
+                            }
                         }
+                    });
+                    
+                    // Process rocket collections (deferred to prevent blocking)
+                    if (rocketsToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                rocketsToCollect.forEach(rocket => {
+                                    this.activateRocket();
+                                    if (typeof this.playSound === 'function') {
+                                        this.playSound('rocket');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error in rocket collection:', error);
+                            }
+                        }, 0);
                     }
-                });
+                    
+                    // Remove collected rockets after iteration
+                    rocketsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.rockets.length) {
+                            this.rockets.splice(index, 1);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error in rocket collision detection:', error);
+                }
 
-                // Check rocket boost collisions
-                this.rocketBoosts.forEach((boost, index) => {
-                    if (!boost.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - boost.x, 2) + 
-                            Math.pow(this.robot.y - boost.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + boost.size)) {
-                            boost.collected = true;
-                            this.collectRocketBoost();
+                // Check rocket boost collisions (safe iteration)
+                try {
+                    const boostsToRemove = [];
+                    const boostsToCollect = [];
+                    
+                    this.rocketBoosts.forEach((boost, index) => {
+                        if (boost && !boost.collected) {
+                            // Safe distance calculation
+                            const dx = (this.robot.x || 0) - (boost.x || 0);
+                            const dy = (this.robot.y || 0) - (boost.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (boost.size || 20);
+                            
+                            if (distance < collisionDistance) {
+                                boost.collected = true;
+                                boostsToCollect.push(boost);
+                                boostsToRemove.push(index);
+                            }
+                        }
+                    });
+                    
+                    // Process rocket boost collections (deferred to prevent blocking)
+                    if (boostsToCollect.length > 0) {
+                        setTimeout(() => {
+                            try {
+                                boostsToCollect.forEach(boost => {
+                                    this.collectRocketBoost();
+                                });
+                            } catch (error) {
+                                console.error('Error in rocket boost collection:', error);
+                            }
+                        }, 0);
+                    }
+                    
+                    // Remove collected rocket boosts after iteration
+                    boostsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.rocketBoosts.length) {
                             this.rocketBoosts.splice(index, 1);
                         }
-                    }
-                });
+                    });
+                } catch (error) {
+                    console.error('Error in rocket boost collision detection:', error);
+                }
 
                 // Check magnet collisions
                 this.magnets.forEach((magnet, index) => {
@@ -2012,12 +2072,27 @@
             }
 
             activateRocket() {
-                this.rocketActive = true;
-                this.rocketTimeLeft = 3000; // 3 seconds
-                this.rocketTimeElement.style.display = 'inline-block';
-                this.showRocketEffect();
-                this.showSlowMotionEffect();
-                this.checkAchievement('firstRocket');
+                try {
+                    this.rocketActive = true;
+                    this.rocketTimeLeft = 3000; // 3 seconds
+                    if (this.rocketTimeElement) {
+                        this.rocketTimeElement.style.display = 'inline-block';
+                    }
+                    if (typeof this.showRocketEffect === 'function') {
+                        this.showRocketEffect();
+                    }
+                    if (typeof this.showSlowMotionEffect === 'function') {
+                        this.showSlowMotionEffect();
+                    }
+                    if (typeof this.checkAchievement === 'function') {
+                        this.checkAchievement('firstRocket');
+                    }
+                } catch (error) {
+                    console.error('Error in activateRocket:', error);
+                    // Reset rocket state on error
+                    this.rocketActive = false;
+                    this.rocketTimeLeft = 0;
+                }
             }
 
             activateRocketBoost() {
