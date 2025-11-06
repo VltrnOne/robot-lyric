@@ -3220,6 +3220,8 @@
 
             gameOver() {
                 this.gameState = 'gameOver';
+                // Hide mobile controls when game over
+                this.updateMobileControlsVisibility();
                 this.finalScoreElement.textContent = `Score: ${this.score} | Level: ${this.level}`;
                 this.gameOverElement.style.display = 'block';
                 this.saveScore();
