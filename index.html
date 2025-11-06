@@ -3522,11 +3522,12 @@
                     this.lastRocketBoostTime = now;
                 }
                 
-                // Generate magnets
-                if (now - this.lastMagnetTime > this.magnetInterval) {
-                    this.createMagnet();
-                    this.lastMagnetTime = now;
-                }
+                // Generate magnets - DISABLED (magnets cause red dots)
+                // MAGNETS DISABLED - NO RED DOTS
+                // if (now - this.lastMagnetTime > this.magnetInterval) {
+                //     this.createMagnet();
+                //     this.lastMagnetTime = now;
+                // }
                 
                 // Generate freezes
                 if (now - this.lastFreezeTime > this.freezeInterval) {
