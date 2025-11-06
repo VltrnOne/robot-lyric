@@ -1677,6 +1677,9 @@
                 this.player2Active = false; // Deactivate Player 2
                 this.robotPower = 100;
                 this.player1FirstCoinCollected = false; // Reset Player 2 lock
+                this.lastProjectileHitTime = 0;
+                this.lastBossHitTime = 0;
+                this.hitProjectiles = new Set();
                 this.scoreElement.textContent = '0';
                 this.levelElement.textContent = 'Level 1';
                 this.shieldCountElement.textContent = '🛡️ 0';
