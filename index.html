@@ -1866,6 +1866,9 @@
             update() {
                 if (this.gameState !== 'playing') return;
                 
+                // AGGRESSIVELY clear all missiles FIRST THING EVERY FRAME to prevent red dots
+                this.missiles = [];
+                
                 // Track play time for achievements
                 this.achievementStats.playTime = (this.achievementStats.playTime || 0) + 16; // Assuming 60fps
                 this.checkStatAchievements();
