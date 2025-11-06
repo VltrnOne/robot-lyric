@@ -1,11 +1,12 @@
 {
-  "name": "intheair-game",
+  "name": "robot-lyric",
   "version": "1.0.0",
-  "description": "A Flappy Bird-style game built with HTML5 Canvas and JavaScript",
+  "description": "ROBOT LYRIC by Lyric and Aria - A fast-paced, retro-style HTML5 game featuring a robot navigating through obstacles",
   "main": "index.html",
   "scripts": {
-    "start": "npx http-server -p 3000 -o",
-    "dev": "npx http-server -p 3000 -o",
+    "start": "npx http-server -p 3003 -o",
+    "dev": "npx http-server -p 3003 -o",
+    "portal": "npx http-server -p 3003 -o portal.html",
     "build": "echo 'No build process needed - pure HTML5/JS game'",
     "deploy": "echo 'Ready for deployment to any web hosting service'"
   },
@@ -14,18 +15,19 @@
     "html5",
     "canvas",
     "javascript",
-    "flappy-bird",
-    "plane",
-    "arcade"
+    "robot",
+    "arcade",
+    "retro",
+    "8-bit"
   ],
-  "author": "InTheAir Game",
+  "author": "Lyric and Aria",
   "license": "MIT",
   "devDependencies": {
     "http-server": "^14.1.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/intheair-game.git"
+    "url": "https://github.com/yourusername/robot-lyric.git"
   },
-  "homepage": "https://yourusername.github.io/intheair-game"
+  "homepage": "https://yourusername.github.io/robot-lyric"
 }

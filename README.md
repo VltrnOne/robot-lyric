@@ -1,4 +1,4 @@
-# 🤖 ROBOT LYRIC
+# 🤖 ROBOT LYRIC by Lyric and Aria
 
 A fast-paced, retro-style HTML5 game featuring a robot navigating through obstacles while collecting power-ups and competing against Player 2!
 
@@ -190,4 +190,5 @@ If you encounter any issues or have suggestions, please open an issue on GitHub.
 
 **Enjoy playing ROBOT LYRIC!** 🤖🎵
 
+*Created by Lyric and Aria*  
 *Made with ❤️ and lots of 8-bit nostalgia*

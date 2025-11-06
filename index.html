@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROBOT LYRIC - Flying Robot Game</title>
+    <title>ROBOT LYRIC by Lyric and Aria - Flying Robot Game</title>
     <style>
         * {
             margin: 0;
@@ -49,12 +49,46 @@
 
         #score {
             position: absolute;
-            top: 20px;
-            right: 30px;
-            color: #2F4F4F;
-            font-size: 32px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 28px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 10;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #F1C40F;
+        }
+        
+        #achievementBadges {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .achievement-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: none;
+            border: 2px solid #FF8C00;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: badgeGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes badgeGlow {
+            from { box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+            to { box-shadow: 0 2px 8px rgba(255,215,0,0.6); }
         }
 
         #level {
@@ -287,6 +321,71 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             display: none;
         }
+        
+        #spendingCurrency {
+            position: absolute;
+            top: 190px;
+            right: 30px;
+            color: #FFD700;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 10;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #FFD700;
+        }
+        
+        #achievementBank {
+            position: absolute;
+            top: 220px;
+            right: 30px;
+            width: 200px;
+            max-height: 150px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 10;
+            overflow-y: auto;
+        }
+        
+        #achievementBankTitle {
+            color: #FFD700;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        #achievementBankList {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .achievement-bank-item {
+            background: rgba(255,215,0,0.2);
+            color: #FFD700;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,215,0,0.5);
+            animation: achievementSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes achievementSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
         #gameOver {
             position: absolute;
@@ -441,23 +540,32 @@
         <div id="ui">
             <div id="level">Level 1</div>
             <div id="playerName">Player</div>
-            <div id="score">0</div>
+            <div id="achievementBadges"></div>
             <div id="powerUpStatus">
                 <span id="shieldCount">🛡️ 0</span>
                 <span id="invincibleTime" class="power-up-indicator shield-indicator" style="display: none;">✨ 0s</span>
                 <span id="rocketTime" class="power-up-indicator rocket-indicator" style="display: none;">🚀 0s</span>
+                <span id="rocketBoostStored" class="power-up-indicator" style="display: none;">⚡ Boost: 0s</span>
+                <span id="rocketBoostActive" class="power-up-indicator" style="display: none;">⚡⚡ BOOST!</span>
             </div>
             <div id="powerBar">
                 <div id="powerBarFill"></div>
             </div>
             <div id="player2Status">Player 2: 🚀 0</div>
             <div id="superCoinTime" style="display: none;">⭐ 0s</div>
+            <div id="spendingCurrency">💰 0</div>
+            <div id="achievementBank">
+                <div id="achievementBankTitle">🏆 Achievements</div>
+                <div id="achievementBankList"></div>
+            </div>
             <button id="settingsBtn">⚙️ Settings</button>
             <button id="soundToggle" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; background: #3498DB; color: white; border: none; border-radius: 5px; cursor: pointer;">🔊 Sound</button>
-            <div id="instructions">Click or Press SPACE to Fly!<br><br>🪙 Coins = 3s Invincibility (1 per coin)<br>⭐ Super Coins = 8 Bonus Coins!<br>🚀 Rockets = Slow Motion + Full Control<br><br>Player 1: SPACE to jump, WASD for rockets<br>Player 2: Press P to activate, Arrow Keys + ENTER to fire<br>Press R to Restart</div>
+            <div id="instructions">Click or Press SPACE to Fly!<br><br>🪙 Coins = 3s Invincibility (1 per coin)<br>⭐ Super Coins = 8 Bonus Coins!<br>🚀 Rockets = Slow Motion + Full Control<br>⚡ Rocket Boosts = Speed Boost (Press B to activate)<br><br>Player 1: SPACE to jump, WASD for rockets, B for boost<br>Player 2: Press P to activate (unlocks after first coin)<br>Player 2: Arrow Keys + ENTER to fire<br>Press R to Restart</div>
+            <div id="score">Score: 0</div>
             
             <div id="nameInputScreen">
                 <h1>🤖 ROBOT LYRIC</h1>
+                <h2 style="font-size: 16px; color: #666; margin-top: -10px; margin-bottom: 20px;">by Lyric and Aria</h2>
                 <h2>Enter Your Name</h2>
                 <input type="text" id="playerNameInputMain" placeholder="Enter your name" maxlength="15" autofocus>
                 <br>
@@ -535,10 +643,15 @@
                 this.shieldCountElement = document.getElementById('shieldCount');
                 this.invincibleTimeElement = document.getElementById('invincibleTime');
                 this.rocketTimeElement = document.getElementById('rocketTime');
+                this.rocketBoostStoredElement = document.getElementById('rocketBoostStored');
+                this.rocketBoostActiveElement = document.getElementById('rocketBoostActive');
                 this.powerBarFill = document.getElementById('powerBarFill');
                 this.player2StatusElement = document.getElementById('player2Status');
                 this.superCoinTimeElement = document.getElementById('superCoinTime');
                 this.soundToggleBtn = document.getElementById('soundToggle');
+                this.achievementBadgesElement = document.getElementById('achievementBadges');
+                this.spendingCurrencyElement = document.getElementById('spendingCurrency');
+                this.achievementBankList = document.getElementById('achievementBankList');
 
                 this.gameWidth = 800;
                 this.gameHeight = 600;
@@ -572,15 +685,53 @@
                 this.coins = [];
                 this.superCoins = [];
                 this.rockets = [];
+                this.rocketBoosts = []; // New rocket boost collectibles
                 this.shieldCount = 0;
                 this.rocketActive = false;
                 this.rocketTimeLeft = 0;
+                // Rocket boost system (separate from slow-motion rockets)
+                this.rocketBoostStored = 0; // Stored boost time in milliseconds (max 3000)
+                this.rocketBoostActive = false; // Currently using boost
+                this.rocketBoostTimeLeft = 0; // Remaining active boost time
+                this.rocketBoostSpeedMultiplier = 1.5; // Speed increase when boost is active
                 this.invincible = false;
                 this.invincibleTimeLeft = 0;
                 this.lastCoinTime = 0;
                 this.lastSuperCoinTime = 0;
                 this.lastRocketTime = 0;
+                this.lastRocketBoostTime = 0;
                 this.coinInterval = 6000; // 6 seconds between coins (reduced frequency)
+                this.rocketBoostInterval = 10000; // 10 seconds between rocket boosts
+                
+                // Coin rarity system
+                this.coinRarities = [
+                    { name: 'Bronze', color: '#CD7F32', value: 1, rarity: 0.35, lifetime: 20 },     // 35% - 20 gates
+                    { name: 'Silver', color: '#C0C0C0', value: 2, rarity: 0.25, lifetime: 20 },     // 25% - 20 gates
+                    { name: 'Gold', color: '#FFD700', value: 3, rarity: 0.20, lifetime: 20 },       // 20% - 20 gates
+                    { name: 'Emerald', color: '#50C878', value: 5, rarity: 0.10, lifetime: 10 },    // 10% - 10 gates
+                    { name: 'Sapphire', color: '#0F52BA', value: 8, rarity: 0.06, lifetime: 10 },   // 6% - 10 gates
+                    { name: 'Ruby', color: '#E0115F', value: 12, rarity: 0.03, lifetime: 10 },      // 3% - 10 gates
+                    { name: 'Diamond', color: '#B9F2FF', value: 20, rarity: 0.01, lifetime: 10 }    // 1% - 10 gates
+                ];
+                this.robotUpgradeLevel = 0;
+                this.spendingCurrency = 0;
+                
+                // Achievement system
+                this.achievements = {
+                    firstCoin: false,
+                    firstRocket: false,
+                    firstOilCan: false,
+                    firstSuperCoin: false,
+                    level5: false,
+                    level10: false,
+                    level20: false,
+                    score100: false,
+                    score500: false,
+                    score1000: false,
+                    perfectRun: false,
+                    missileMaster: false
+                };
+                this.achievementBadgesElement = null;
                 this.superCoinInterval = 30000; // 30 seconds between super coins (rare)
                 this.rocketInterval = 8000; // 8 seconds between rockets
                 this.superCoinActive = false;
@@ -591,6 +742,7 @@
                 this.player2Missiles = 0;
                 this.missiles = [];
                 this.robotPower = 100; // Power percentage
+                this.player1FirstCoinCollected = false; // Player 2 disabled until first coin
                 this.lastMissileTime = 0;
                 this.missileCooldown = 500; // 0.5 seconds between missiles
                 
@@ -664,6 +816,15 @@
                 });
 
                 // Keyboard controls
+                // Keyup handler for rocket boost (stop when B is released)
+                document.addEventListener('keyup', (e) => {
+                    if (e.code === 'KeyB' && this.gameState === 'playing') {
+                        if (this.rocketBoostActive) {
+                            this.stopRocketBoost();
+                        }
+                    }
+                });
+
                 document.addEventListener('keydown', (e) => {
                     if (e.code === 'Space') {
                         e.preventDefault();
@@ -677,13 +838,24 @@
                     } else if (e.code === 'Escape') {
                         this.closeAllMenus();
                     } else if (e.code === 'KeyP' && this.gameState === 'playing') {
-                        // Toggle Player 2
+                        // Toggle Player 2 (only if Player 1 has collected first coin)
+                        if (!this.player1FirstCoinCollected) {
+                            console.log("Player 2 is locked! Collect your first coin to unlock Player 2.");
+                            return;
+                        }
                         this.player2Active = !this.player2Active;
                         if (this.player2Active) {
                             this.player2Missiles = 3; // Give Player 2 some initial missiles
                             console.log("Player 2 activated!");
                         } else {
                             console.log("Player 2 deactivated!");
+                        }
+                    } else if (e.code === 'KeyB' && this.gameState === 'playing') {
+                        // Activate rocket boost (press and hold)
+                        if (this.rocketBoostStored > 0 && !this.rocketBoostActive) {
+                            this.activateRocketBoost();
+                        } else if (this.rocketBoostActive) {
+                            // If already active, continue using boost (handled in update)
                         }
                     } else if (this.gameState === 'playing' && this.rocketActive) {
                         // Improved rocket controls
@@ -841,24 +1013,33 @@
                 this.coins = [];
                 this.superCoins = [];
                 this.rockets = [];
+                this.rocketBoosts = [];
                 this.missiles = [];
                 this.shieldCount = 0;
                 this.rocketActive = false;
                 this.rocketTimeLeft = 0;
+                this.rocketBoostStored = 0;
+                this.rocketBoostActive = false;
+                this.rocketBoostTimeLeft = 0;
                 this.invincible = false;
                 this.invincibleTimeLeft = 0;
                 this.superCoinActive = false;
                 this.superCoinTimeLeft = 0;
                 this.player2Missiles = 0;
+                this.player2Active = false; // Deactivate Player 2
                 this.robotPower = 100;
+                this.player1FirstCoinCollected = false; // Reset Player 2 lock
                 this.scoreElement.textContent = '0';
                 this.levelElement.textContent = 'Level 1';
                 this.shieldCountElement.textContent = '🛡️ 0';
                 this.invincibleTimeElement.style.display = 'none';
                 this.rocketTimeElement.style.display = 'none';
+                this.rocketBoostStoredElement.style.display = 'none';
+                this.rocketBoostActiveElement.style.display = 'none';
                 this.superCoinTimeElement.style.display = 'none';
                 this.powerBarFill.style.width = '100%';
-                this.player2StatusElement.textContent = 'Player 2: 🚀 0';
+                this.player2StatusElement.textContent = 'Player 2: 🔒 Locked (collect first coin)';
+                this.player2StatusElement.style.color = '#999';
                 this.showNameInputScreen();
                 this.closeAllMenus();
             }
@@ -900,7 +1081,12 @@
                 }
 
                 // Update obstacles
-                const currentSpeed = this.rocketActive ? this.obstacleSpeed * this.rocketSpeedMultiplier : this.obstacleSpeed;
+                let currentSpeed = this.obstacleSpeed;
+                if (this.rocketActive) {
+                    currentSpeed = this.obstacleSpeed * this.rocketSpeedMultiplier; // Slow motion
+                } else if (this.rocketBoostActive) {
+                    currentSpeed = this.obstacleSpeed * this.rocketBoostSpeedMultiplier; // Speed boost
+                }
                 this.obstacles.forEach((obstacle, index) => {
                     obstacle.x -= currentSpeed;
                     if (obstacle.x < -this.obstacleWidth) {
@@ -911,6 +1097,13 @@
                             this.scoreElement.textContent = this.score;
                             this.checkLevelUp();
                         }
+                        
+                        // Reduce coin lifetime when gate is passed (safe)
+                        this.coins.forEach(coin => {
+                            if (coin && !coin.collected && typeof coin.gatesRemaining === 'number') {
+                                coin.gatesRemaining--;
+                            }
+                        });
                     }
                 });
 
@@ -936,6 +1129,9 @@
                     
                     // Update music intensity
                     this.updateMusicIntensity();
+                    
+                    // Check level achievements
+                    this.checkLevelAchievements();
                     
                     // Visual feedback for level up
                     this.showLevelUpEffect();
@@ -1027,22 +1223,49 @@
             }
 
             checkPowerUpCollisions() {
-                // Check coin collisions
-                this.coins.forEach((coin, index) => {
-                    if (!coin.collected) {
-                        const distance = Math.sqrt(
-                            Math.pow(this.robot.x - coin.x, 2) + 
-                            Math.pow(this.robot.y - coin.y, 2)
-                        );
-                        if (distance < (this.robot.width / 2 + coin.size)) {
-                            coin.collected = true;
-                            this.shieldCount++;
-                            this.player2Missiles++; // Player 2 gets missile for each shield
-                            this.coins.splice(index, 1);
-                            this.playSound('coin');
+                // Check coin collisions (ultra-safe iteration)
+                try {
+                    const coinsToRemove = [];
+                    const coinsToCollect = [];
+                    
+                    this.coins.forEach((coin, index) => {
+                        if (coin && !coin.collected) {
+                            // Safe distance calculation
+                            const dx = (this.robot.x || 0) - (coin.x || 0);
+                            const dy = (this.robot.y || 0) - (coin.y || 0);
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const collisionDistance = (this.robot.width || 20) / 2 + (coin.size || 10);
+                            
+                            if (distance < collisionDistance) {
+                                coin.collected = true;
+                                coinsToCollect.push(coin);
+                                coinsToRemove.push(index);
+                            }
                         }
+                    });
+                    
+                    // Process coin collections (deferred to prevent blocking)
+                    if (coinsToCollect.length > 0) {
+                        requestAnimationFrame(() => {
+                            coinsToCollect.forEach(coin => {
+                                this.collectCoin(coin);
+                                this.player2Missiles++; // Player 2 gets missile for each shield
+                            });
+                        });
                     }
-                });
+                    
+                    // Remove collected coins after iteration
+                    coinsToRemove.reverse().forEach(index => {
+                        if (index >= 0 && index < this.coins.length) {
+                            this.coins.splice(index, 1);
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Error in coin collision detection:', error);
+                    // Reset coins array if there's a critical error
+                    this.coins = [];
+                }
 
                 // Check super coin collisions
                 this.superCoins.forEach((superCoin, index) => {
@@ -1072,6 +1295,21 @@
                             this.activateRocket();
                             this.rockets.splice(index, 1);
                             this.playSound('rocket');
+                        }
+                    }
+                });
+
+                // Check rocket boost collisions
+                this.rocketBoosts.forEach((boost, index) => {
+                    if (!boost.collected) {
+                        const distance = Math.sqrt(
+                            Math.pow(this.robot.x - boost.x, 2) + 
+                            Math.pow(this.robot.y - boost.y, 2)
+                        );
+                        if (distance < (this.robot.width / 2 + boost.size)) {
+                            boost.collected = true;
+                            this.collectRocketBoost();
+                            this.rocketBoosts.splice(index, 1);
                         }
                     }
                 });
@@ -1108,6 +1346,76 @@
                 this.showShieldEffect();
                 this.playSound('shield');
             }
+            
+            collectCoin(coin) {
+                try {
+                    // Immediate, safe collection (no blocking operations)
+                    this.shieldCount = (this.shieldCount || 0) + 1;
+                    this.score = (this.score || 0) + 0.5;
+                    
+                    // Enable Player 2 after first coin is collected
+                    if (!this.player1FirstCoinCollected) {
+                        this.player1FirstCoinCollected = true;
+                        console.log("Player 2 is now unlocked! Press P to activate.");
+                    }
+                    
+                    // Update score immediately (safe operation)
+                    if (this.scoreElement) {
+                        this.scoreElement.textContent = `Score: ${Math.floor(this.score)}`;
+                    }
+                    
+                    // Handle spending currency (safe)
+                    if (coin && coin.rarity && coin.rarity.value) {
+                        this.spendingCurrency = (this.spendingCurrency || 0) + coin.rarity.value;
+                    } else {
+                        this.spendingCurrency = (this.spendingCurrency || 0) + 1;
+                    }
+                    
+                    // Defer ALL UI updates and effects to prevent blocking
+                    setTimeout(() => {
+                        try {
+                            this.updateSpendingCurrency();
+                            this.playSound('coin');
+                            this.checkAchievement('firstCoin');
+                            this.checkScoreAchievements();
+                            
+                            // Show coin effect (deferred)
+                            if (coin && coin.rarity) {
+                                this.showCoinEffect(coin.rarity);
+                                
+                                // Check for robot upgrade (deferred)
+                                if (coin.rarity.name === 'Diamond') {
+                                    this.robotUpgradeLevel = (this.robotUpgradeLevel || 0) + 1;
+                                    if (this.robotUpgradeLevel >= 7) {
+                                        this.upgradeRobot();
+                                    }
+                                }
+                            } else {
+                                this.showCoinEffect({ name: 'Gold', color: '#FFD700', value: 1 });
+                            }
+                        } catch (error) {
+                            console.error('Error in deferred coin collection:', error);
+                        }
+                    }, 0);
+                    
+                } catch (error) {
+                    console.error('Error in collectCoin:', error);
+                    // Minimal fallback - just basic collection
+                    this.shieldCount = (this.shieldCount || 0) + 1;
+                    this.score = (this.score || 0) + 0.5;
+                    if (this.scoreElement) {
+                        this.scoreElement.textContent = `Score: ${Math.floor(this.score)}`;
+                    }
+                }
+            }
+            
+            updateSpendingCurrency() {
+                if (this.spendingCurrencyElement) {
+                    this.spendingCurrencyElement.textContent = `💰 ${this.spendingCurrency || 0}`;
+                } else {
+                    console.warn('Spending currency element not found');
+                }
+            }
 
             activateInvincibility() {
                 this.invincible = true;
@@ -1122,6 +1430,88 @@
                 this.rocketTimeElement.style.display = 'inline-block';
                 this.showRocketEffect();
                 this.showSlowMotionEffect();
+                this.checkAchievement('firstRocket');
+            }
+
+            activateRocketBoost() {
+                // Activate boost from stored time
+                if (this.rocketBoostStored > 0) {
+                    this.rocketBoostActive = true;
+                    this.rocketBoostTimeLeft = Math.min(this.rocketBoostStored, 3000); // Use stored time (max 3s)
+                    this.rocketBoostStored = 0; // Clear stored boost
+                    this.rocketBoostActiveElement.style.display = 'inline-block';
+                    this.rocketBoostStoredElement.style.display = 'none';
+                    this.showRocketBoostEffect();
+                    this.playSound('rocket');
+                }
+            }
+
+            stopRocketBoost() {
+                // Stop boost and save remaining time
+                if (this.rocketBoostActive && this.rocketBoostTimeLeft > 0) {
+                    // Save remaining time back to storage (can't stack, so replace)
+                    this.rocketBoostStored = this.rocketBoostTimeLeft;
+                    this.rocketBoostActive = false;
+                    this.rocketBoostTimeLeft = 0;
+                    this.rocketBoostActiveElement.style.display = 'none';
+                    if (this.rocketBoostStored > 0) {
+                        this.rocketBoostStoredElement.style.display = 'inline-block';
+                        this.rocketBoostStoredElement.textContent = `⚡ Boost: ${(this.rocketBoostStored / 1000).toFixed(1)}s`;
+                    }
+                }
+            }
+
+            collectRocketBoost() {
+                // Collect rocket boost (max 3 seconds, can't stack)
+                if (this.rocketBoostStored < 3000) {
+                    this.rocketBoostStored = Math.min(3000, this.rocketBoostStored + 3000); // Add 3 seconds (max 3s total)
+                    this.rocketBoostStoredElement.style.display = 'inline-block';
+                    this.rocketBoostStoredElement.textContent = `⚡ Boost: ${(this.rocketBoostStored / 1000).toFixed(1)}s`;
+                    this.showRocketBoostCollectEffect();
+                    this.playSound('rocket');
+                }
+            }
+
+            showRocketBoostEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#FF6B6B';
+                effect.style.fontSize = '32px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '⚡⚡ BOOST!';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 500);
+            }
+
+            showRocketBoostCollectEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#FFD700';
+                effect.style.fontSize = '24px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '⚡ Rocket Boost Collected!';
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.style.transition = 'opacity 0.5s';
+                    effect.style.opacity = '0';
+                    setTimeout(() => effect.remove(), 500);
+                }, 1000);
             }
 
             showShieldEffect() {
@@ -1229,6 +1619,7 @@
                 this.superCoinTimeLeft = 5000; // 5 seconds
                 this.superCoinTimeElement.style.display = 'inline-block';
                 this.showSuperCoinEffect();
+                this.checkAchievement('firstSuperCoin');
                 
                 // Generate plethora of coins
                 for (let i = 0; i < 8; i++) {
@@ -1313,6 +1704,7 @@
                 this.robotPower = Math.min(100, this.robotPower + 50);
                 this.showOilCanEffect();
                 this.playSound('oilCan');
+                this.checkAchievement('firstOilCan');
             }
 
             showMissileHitEffect() {
@@ -1361,6 +1753,241 @@
                         effect.parentNode.removeChild(effect);
                     }
                 }, 1500);
+            }
+            
+            showCoinEffect(rarity) {
+                // Safety check for rarity object
+                if (!rarity || typeof rarity !== 'object') {
+                    console.error('Invalid rarity object:', rarity);
+                    return;
+                }
+                
+                // Ensure required properties exist with defaults
+                const safeRarity = {
+                    color: rarity.color || '#FFD700',
+                    value: rarity.value || 1,
+                    name: rarity.name || 'Gold'
+                };
+                
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = safeRarity.color;
+                effect.style.fontSize = (20 + (safeRarity.value * 2)) + 'px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = `🪙 +${safeRarity.value} ${safeRarity.name}`;
+                effect.style.animation = 'fadeInOut 1.2s ease-in-out';
+                
+                const gameContainer = document.getElementById('gameContainer');
+                if (gameContainer) {
+                    gameContainer.appendChild(effect);
+                    
+                    setTimeout(() => {
+                        if (effect.parentNode) {
+                            effect.parentNode.removeChild(effect);
+                        }
+                    }, 1200);
+                } else {
+                    console.error('Game container not found');
+                }
+            }
+            
+            checkAchievement(achievementKey) {
+                if (!this.achievements[achievementKey]) {
+                    this.achievements[achievementKey] = true;
+                    this.addAchievementToBank(achievementKey);
+                    this.updateAchievementBadges();
+                }
+            }
+            
+            checkScoreAchievements() {
+                if (this.score >= 100 && !this.achievements.score100) {
+                    this.checkAchievement('score100');
+                }
+                if (this.score >= 500 && !this.achievements.score500) {
+                    this.checkAchievement('score500');
+                }
+                if (this.score >= 1000 && !this.achievements.score1000) {
+                    this.checkAchievement('score1000');
+                }
+            }
+            
+            checkLevelAchievements() {
+                if (this.level >= 5 && !this.achievements.level5) {
+                    this.checkAchievement('level5');
+                }
+                if (this.level >= 10 && !this.achievements.level10) {
+                    this.checkAchievement('level10');
+                }
+                if (this.level >= 20 && !this.achievements.level20) {
+                    this.checkAchievement('level20');
+                }
+            }
+            
+            addAchievementToBank(achievementKey) {
+                const achievementNames = {
+                    firstCoin: '🪙 First Coin',
+                    firstRocket: '🚀 First Rocket',
+                    firstOilCan: '🛢️ First Oil',
+                    firstSuperCoin: '⭐ First Super Coin',
+                    level5: '🏆 Level 5',
+                    level10: '👑 Level 10',
+                    level20: '💎 Level 20',
+                    score100: '💯 Score 100',
+                    score500: '🔥 Score 500',
+                    score1000: '🌟 Score 1000',
+                    perfectRun: '✨ Perfect Run',
+                    missileMaster: '🎯 Missile Master'
+                };
+                
+                if (!this.achievementBankList) return;
+                
+                const achievementItem = document.createElement('div');
+                achievementItem.className = 'achievement-bank-item';
+                achievementItem.textContent = achievementNames[achievementKey] || '🏆 Achievement';
+                
+                this.achievementBankList.appendChild(achievementItem);
+                
+                // Auto-remove after 5 seconds to prevent overflow
+                setTimeout(() => {
+                    if (achievementItem.parentNode) {
+                        achievementItem.parentNode.removeChild(achievementItem);
+                    }
+                }, 5000);
+                
+                // Play achievement sound (non-blocking)
+                this.playSound('coin'); // Use existing coin sound for achievements
+            }
+            
+            updateAchievementBadges() {
+                if (!this.achievementBadgesElement) return;
+                
+                this.achievementBadgesElement.innerHTML = '';
+                
+                const badgeOrder = [
+                    'firstCoin', 'firstRocket', 'firstOilCan', 'firstSuperCoin',
+                    'level5', 'level10', 'level20',
+                    'score100', 'score500', 'score1000',
+                    'perfectRun', 'missileMaster'
+                ];
+                
+                badgeOrder.forEach(achievementKey => {
+                    if (this.achievements[achievementKey]) {
+                        const badge = document.createElement('div');
+                        badge.className = 'achievement-badge';
+                        badge.textContent = this.getAchievementBadgeText(achievementKey);
+                        this.achievementBadgesElement.appendChild(badge);
+                    }
+                });
+            }
+            
+            getAchievementBadgeText(achievementKey) {
+                const badgeTexts = {
+                    firstCoin: '🪙',
+                    firstRocket: '🚀',
+                    firstOilCan: '🛢️',
+                    firstSuperCoin: '⭐',
+                    level5: '5️⃣',
+                    level10: '🔟',
+                    level20: '2️⃣0️⃣',
+                    score100: '💯',
+                    score500: '🔥',
+                    score1000: '🌟',
+                    perfectRun: '✨',
+                    missileMaster: '🎯'
+                };
+                return badgeTexts[achievementKey] || '🏆';
+            }
+            
+            upgradeRobot() {
+                this.robotUpgradeLevel = 0; // Reset for next upgrade cycle
+                this.showRobotUpgradeEffect();
+                this.playSound('superCoin'); // Use special sound for upgrade
+            }
+            
+            showRobotUpgradeEffect() {
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.top = '50%';
+                effect.style.left = '50%';
+                effect.style.transform = 'translate(-50%, -50%)';
+                effect.style.color = '#FFD700';
+                effect.style.fontSize = '32px';
+                effect.style.fontWeight = 'bold';
+                effect.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                effect.style.zIndex = '1000';
+                effect.style.pointerEvents = 'none';
+                effect.textContent = '🤖 ROBOT UPGRADED! 🤖';
+                effect.style.animation = 'fadeInOut 3s ease-in-out';
+                
+                document.getElementById('gameContainer').appendChild(effect);
+                
+                setTimeout(() => {
+                    if (effect.parentNode) {
+                        effect.parentNode.removeChild(effect);
+                    }
+                }, 3000);
+            }
+            
+            getCoinSymbol(rarityName) {
+                if (!rarityName || typeof rarityName !== 'string') {
+                    return '$';
+                }
+                
+                const symbols = {
+                    'Bronze': 'B',
+                    'Silver': 'S',
+                    'Gold': 'G',
+                    'Emerald': 'E',
+                    'Sapphire': 'S',
+                    'Ruby': 'R',
+                    'Diamond': 'D'
+                };
+                return symbols[rarityName] || '$';
+            }
+            
+            lightenColor(color, factor) {
+                // Safety checks
+                if (!color || typeof color !== 'string') {
+                    return '#FFD700'; // Default gold color
+                }
+                
+                if (typeof factor !== 'number' || factor < 0 || factor > 1) {
+                    factor = 0.3; // Default factor
+                }
+                
+                try {
+                    // Convert hex to RGB
+                    const hex = color.replace('#', '');
+                    if (hex.length !== 6) {
+                        return '#FFD700'; // Default if invalid hex
+                    }
+                    
+                    const r = parseInt(hex.substr(0, 2), 16);
+                    const g = parseInt(hex.substr(2, 2), 16);
+                    const b = parseInt(hex.substr(4, 2), 16);
+                    
+                    // Check for valid RGB values
+                    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+                        return '#FFD700'; // Default if invalid
+                    }
+                    
+                    // Lighten by factor
+                    const newR = Math.min(255, Math.floor(r + (255 - r) * factor));
+                    const newG = Math.min(255, Math.floor(g + (255 - g) * factor));
+                    const newB = Math.min(255, Math.floor(b + (255 - b) * factor));
+                    
+                    // Convert back to hex
+                    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+                } catch (error) {
+                    console.error('Error in lightenColor:', error);
+                    return '#FFD700'; // Default fallback
+                }
             }
 
             gameOver() {
@@ -1512,19 +2139,41 @@
                     this.createRocket();
                     this.lastRocketTime = now;
                 }
+                
+                // Generate rocket boosts
+                if (now - this.lastRocketBoostTime > this.rocketBoostInterval) {
+                    this.createRocketBoost();
+                    this.lastRocketBoostTime = now;
+                }
             }
 
             createCoin() {
+                // Select coin rarity based on probability
+                const random = Math.random();
+                let cumulativeRarity = 0;
+                let selectedRarity = this.coinRarities[0]; // Default to bronze
+                
+                for (const rarity of this.coinRarities) {
+                    cumulativeRarity += rarity.rarity;
+                    if (random <= cumulativeRarity) {
+                        selectedRarity = rarity;
+                        break;
+                    }
+                }
+                
                 this.coins.push({
                     x: Math.random() * (this.gameWidth - 100) + 50,
                     y: Math.random() * (this.gameHeight - 200) + 100,
-                    size: 20,
+                    size: 15 + (selectedRarity.value * 2), // Larger coins for higher rarity
                     velocity: {
                         x: (Math.random() - 0.5) * 2,
                         y: (Math.random() - 0.5) * 2
                     },
                     rotation: 0,
-                    collected: false
+                    collected: false,
+                    rarity: selectedRarity,
+                    gatesRemaining: selectedRarity.lifetime,
+                    glowPhase: 0
                 });
             }
 
@@ -1571,27 +2220,77 @@
                 });
             }
 
-            updatePowerUps() {
-                // Update coins
-                this.coins.forEach((coin, index) => {
-                    if (!coin.collected) {
-                        coin.x += coin.velocity.x;
-                        coin.y += coin.velocity.y;
-                        coin.rotation += 0.1;
-                        
-                        // Bounce off edges
-                        if (coin.x <= coin.size || coin.x >= this.gameWidth - coin.size) {
-                            coin.velocity.x *= -1;
-                        }
-                        if (coin.y <= coin.size || coin.y >= this.gameHeight - 100) {
-                            coin.velocity.y *= -1;
-                        }
-                        
-                        // Keep within bounds
-                        coin.x = Math.max(coin.size, Math.min(this.gameWidth - coin.size, coin.x));
-                        coin.y = Math.max(coin.size, Math.min(this.gameHeight - 100, coin.y));
-                    }
+            createRocketBoost() {
+                this.rocketBoosts.push({
+                    x: Math.random() * (this.gameWidth - 100) + 50,
+                    y: Math.random() * (this.gameHeight - 200) + 100,
+                    size: 20,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 2,
+                        y: (Math.random() - 0.5) * 2
+                    },
+                    rotation: 0,
+                    collected: false,
+                    glow: 0
                 });
+            }
+
+            updatePowerUps() {
+                // Update coins (safe iteration with error handling)
+                try {
+                    this.coins.forEach((coin, index) => {
+                        if (coin && !coin.collected) {
+                            // Safe property access with fallbacks
+                            if (typeof coin.x === 'number' && coin.velocity && typeof coin.velocity.x === 'number') {
+                                coin.x += coin.velocity.x;
+                            }
+                            if (typeof coin.y === 'number' && coin.velocity && typeof coin.velocity.y === 'number') {
+                                coin.y += coin.velocity.y;
+                            }
+                            if (typeof coin.rotation === 'number') {
+                                coin.rotation += 0.1;
+                            }
+                            
+                            // Handle glow phase for rarity coins
+                            if (typeof coin.glowPhase === 'number') {
+                                coin.glowPhase += 0.1;
+                            }
+                            
+                            // Bounce off edges (safe bounds checking)
+                            if (typeof coin.size === 'number') {
+                                if (coin.x <= coin.size || coin.x >= this.gameWidth - coin.size) {
+                                    if (coin.velocity && typeof coin.velocity.x === 'number') {
+                                        coin.velocity.x *= -1;
+                                    }
+                                }
+                                if (coin.y <= coin.size || coin.y >= this.gameHeight - 100) {
+                                    if (coin.velocity && typeof coin.velocity.y === 'number') {
+                                        coin.velocity.y *= -1;
+                                    }
+                                }
+                                
+                                // Keep within bounds
+                                coin.x = Math.max(coin.size, Math.min(this.gameWidth - coin.size, coin.x));
+                                coin.y = Math.max(coin.size, Math.min(this.gameHeight - 100, coin.y));
+                            }
+                        }
+                    });
+                    
+                    // Remove coins that have expired (based on gates passed) - safe filtering
+                    this.coins = this.coins.filter(coin => {
+                        if (!coin) return false; // Remove null/undefined coins
+                        // Keep old coins without gatesRemaining property
+                        if (coin.gatesRemaining === undefined) {
+                            return true;
+                        }
+                        return coin.gatesRemaining > 0;
+                    });
+                    
+                } catch (error) {
+                    console.error('Error updating coins:', error);
+                    // Reset coins array if there's a critical error
+                    this.coins = [];
+                }
                 
                 // Update rockets
                 this.rockets.forEach((rocket, index) => {
@@ -1635,6 +2334,39 @@
                         this.rocketTimeElement.textContent = `🚀 ${Math.ceil(this.rocketTimeLeft / 1000)}s`;
                     }
                 }
+                
+                // Update rocket boost timer
+                if (this.rocketBoostActive) {
+                    this.rocketBoostTimeLeft -= 16; // Assuming 60fps
+                    if (this.rocketBoostTimeLeft <= 0) {
+                        this.rocketBoostActive = false;
+                        this.rocketBoostActiveElement.style.display = 'none';
+                    } else {
+                        this.rocketBoostActiveElement.textContent = `⚡⚡ BOOST! ${(this.rocketBoostTimeLeft / 1000).toFixed(1)}s`;
+                    }
+                }
+                
+                // Update rocket boosts
+                this.rocketBoosts.forEach((boost, index) => {
+                    if (!boost.collected) {
+                        boost.x += boost.velocity.x;
+                        boost.y += boost.velocity.y;
+                        boost.rotation += 0.2;
+                        boost.glow += 0.15;
+                        
+                        // Bounce off edges
+                        if (boost.x <= boost.size || boost.x >= this.gameWidth - boost.size) {
+                            boost.velocity.x *= -1;
+                        }
+                        if (boost.y <= boost.size || boost.y >= this.gameHeight - 100) {
+                            boost.velocity.y *= -1;
+                        }
+                        
+                        // Keep within bounds
+                        boost.x = Math.max(boost.size, Math.min(this.gameWidth - boost.size, boost.x));
+                        boost.y = Math.max(boost.size, Math.min(this.gameHeight - 100, boost.y));
+                    }
+                });
                 
                 // Update super coins
                 this.superCoins.forEach((superCoin, index) => {
@@ -1718,10 +2450,24 @@
                 this.powerBarFill.style.width = `${this.robotPower}%`;
                 
                 // Update player 2 status
-                this.player2StatusElement.textContent = `Player 2: 🚀 ${this.player2Missiles}`;
+                if (!this.player1FirstCoinCollected) {
+                    this.player2StatusElement.textContent = `Player 2: 🔒 Locked (collect first coin)`;
+                    this.player2StatusElement.style.color = '#999';
+                } else {
+                    this.player2StatusElement.textContent = `Player 2: 🚀 ${this.player2Missiles}`;
+                    this.player2StatusElement.style.color = '';
+                }
                 
                 // Update UI
                 this.shieldCountElement.textContent = `🛡️ ${this.shieldCount}`;
+                
+                // Update rocket boost stored display
+                if (this.rocketBoostStored > 0 && !this.rocketBoostActive) {
+                    this.rocketBoostStoredElement.style.display = 'inline-block';
+                    this.rocketBoostStoredElement.textContent = `⚡ Boost: ${(this.rocketBoostStored / 1000).toFixed(1)}s`;
+                } else if (!this.rocketBoostActive) {
+                    this.rocketBoostStoredElement.style.display = 'none';
+                }
             }
 
             draw() {
@@ -1746,6 +2492,9 @@
 
                 // Draw super coins
                 this.drawSuperCoins();
+
+                // Draw rocket boosts
+                this.drawRocketBoosts();
 
                 // Draw oil cans
                 this.drawOilCans();
@@ -1859,31 +2608,84 @@
             }
 
             drawPowerUps() {
-                // Draw coins
+                // Draw coins with rarity-based styling
                 this.coins.forEach(coin => {
                     if (!coin.collected) {
                         this.ctx.save();
                         this.ctx.translate(coin.x, coin.y);
                         this.ctx.rotate(coin.rotation);
                         
-                        // Coin body
-                        this.ctx.fillStyle = '#F1C40F';
-                        this.ctx.beginPath();
-                        this.ctx.arc(0, 0, coin.size, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        
-                        // Coin shine
-                        this.ctx.fillStyle = '#F7DC6F';
-                        this.ctx.beginPath();
-                        this.ctx.arc(-coin.size * 0.3, -coin.size * 0.3, coin.size * 0.4, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        
-                        // Coin symbol
-                        this.ctx.fillStyle = '#D4AC0D';
-                        this.ctx.font = `${coin.size * 0.8}px Arial`;
-                        this.ctx.textAlign = 'center';
-                        this.ctx.textBaseline = 'middle';
-                        this.ctx.fillText('$', 0, 0);
+                        // Handle coin rarity (backward compatibility)
+                        if (coin.rarity) {
+                            // Dynamic glow based on rarity
+                            this.ctx.shadowColor = coin.rarity.color;
+                            this.ctx.shadowBlur = 8 + (coin.rarity.value * 2);
+                            
+                            // Coin body with rarity color
+                            this.ctx.fillStyle = coin.rarity.color;
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, coin.size, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            
+                            // Coin inner circle (lighter shade)
+                            const lighterColor = this.lightenColor(coin.rarity.color, 0.3);
+                            this.ctx.fillStyle = lighterColor;
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, coin.size * 0.7, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            
+                            // Rarity-specific symbol
+                            this.ctx.fillStyle = '#000000';
+                            this.ctx.font = `bold ${coin.size * 0.8}px Arial`;
+                            this.ctx.textAlign = 'center';
+                            this.ctx.textBaseline = 'middle';
+                            
+                            const symbol = this.getCoinSymbol(coin.rarity.name);
+                            this.ctx.fillText(symbol, 0, 0);
+                            
+                            // Rarity border for higher value coins
+                            if (coin.rarity.value >= 5) {
+                                this.ctx.strokeStyle = '#FFFFFF';
+                                this.ctx.lineWidth = 2;
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, coin.size, 0, Math.PI * 2);
+                                this.ctx.stroke();
+                            }
+                            
+                            // Pulsing effect for rare coins
+                            if (coin.rarity.value >= 8) {
+                                const pulse = Math.sin(coin.glowPhase || 0) * 0.2 + 0.8;
+                                this.ctx.globalAlpha = pulse;
+                                this.ctx.fillStyle = coin.rarity.color;
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, coin.size * 1.2, 0, Math.PI * 2);
+                                this.ctx.fill();
+                                this.ctx.globalAlpha = 1;
+                            }
+                        } else {
+                            // Fallback for old coins without rarity
+                            this.ctx.shadowColor = '#F1C40F';
+                            this.ctx.shadowBlur = 10;
+                            
+                            // Coin body
+                            this.ctx.fillStyle = '#F1C40F';
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, coin.size, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            
+                            // Coin shine
+                            this.ctx.fillStyle = '#F7DC6F';
+                            this.ctx.beginPath();
+                            this.ctx.arc(-coin.size * 0.3, -coin.size * 0.3, coin.size * 0.4, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            
+                            // Coin symbol
+                            this.ctx.fillStyle = '#D4AC0D';
+                            this.ctx.font = `${coin.size * 0.8}px Arial`;
+                            this.ctx.textAlign = 'center';
+                            this.ctx.textBaseline = 'middle';
+                            this.ctx.fillText('$', 0, 0);
+                        }
                         
                         this.ctx.restore();
                     }
@@ -1919,6 +2721,48 @@
                         this.ctx.beginPath();
                         this.ctx.arc(0, rocket.size * 0.6, rocket.size * 0.2, 0, Math.PI * 2);
                         this.ctx.fill();
+                        
+                        this.ctx.restore();
+                    }
+                });
+            }
+
+            drawRocketBoosts() {
+                this.rocketBoosts.forEach(boost => {
+                    if (!boost.collected) {
+                        this.ctx.save();
+                        this.ctx.translate(boost.x, boost.y);
+                        this.ctx.rotate(boost.rotation);
+                        
+                        // Glow effect
+                        const glowIntensity = Math.sin(boost.glow) * 0.3 + 0.7;
+                        this.ctx.shadowColor = '#FF6B6B';
+                        this.ctx.shadowBlur = 15 + Math.sin(boost.glow) * 5;
+                        
+                        // Boost body (orange/red gradient)
+                        const gradient = this.ctx.createLinearGradient(-boost.size * 0.5, 0, boost.size * 0.5, 0);
+                        gradient.addColorStop(0, '#FF6B6B');
+                        gradient.addColorStop(1, '#FF8C42');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, boost.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        // Boost symbol (lightning bolt)
+                        this.ctx.fillStyle = '#FFD700';
+                        this.ctx.font = `bold ${boost.size * 0.8}px Arial`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText('⚡', 0, 0);
+                        
+                        // Pulsing outer ring
+                        this.ctx.strokeStyle = '#FF6B6B';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.globalAlpha = glowIntensity * 0.5;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, boost.size * 1.3, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                        this.ctx.globalAlpha = 1;
                         
                         this.ctx.restore();
                     }
@@ -1967,39 +2811,59 @@
                     this.ctx.rotate(oilCan.rotation);
                     
                     // Oil can glow
-                    this.ctx.shadowColor = '#27AE60';
+                    this.ctx.shadowColor = '#8B4513';
                     this.ctx.shadowBlur = 8;
                     
                     // Bobbing effect
                     const bobOffset = Math.sin(oilCan.bobPhase) * 3;
                     this.ctx.translate(0, bobOffset);
                     
-                    // Oil can body (dark green)
-                    this.ctx.fillStyle = '#1E8449';
-                    this.ctx.fillRect(-oilCan.size, -oilCan.size, oilCan.size * 2, oilCan.size * 1.5);
+                    // Oil can body (brown metal)
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(-oilCan.size, -oilCan.size * 0.8, oilCan.size * 2, oilCan.size * 1.6);
                     
-                    // Oil can top (lighter green)
-                    this.ctx.fillStyle = '#27AE60';
-                    this.ctx.fillRect(-oilCan.size * 0.8, -oilCan.size * 1.2, oilCan.size * 1.6, oilCan.size * 0.4);
+                    // Oil can top rim (darker brown)
+                    this.ctx.fillStyle = '#654321';
+                    this.ctx.fillRect(-oilCan.size * 0.9, -oilCan.size * 0.9, oilCan.size * 1.8, oilCan.size * 0.2);
                     
-                    // Oil can spout
-                    this.ctx.fillStyle = '#1E8449';
-                    this.ctx.fillRect(-oilCan.size * 0.3, -oilCan.size * 1.4, oilCan.size * 0.6, oilCan.size * 0.3);
+                    // Oil can bottom rim
+                    this.ctx.fillStyle = '#654321';
+                    this.ctx.fillRect(-oilCan.size * 0.9, oilCan.size * 0.7, oilCan.size * 1.8, oilCan.size * 0.2);
                     
-                    // Oil can label
-                    this.ctx.fillStyle = '#FFFFFF';
-                    this.ctx.font = `${oilCan.size * 0.3}px Arial`;
+                    // Oil can spout (metal)
+                    this.ctx.fillStyle = '#A0522D';
+                    this.ctx.fillRect(-oilCan.size * 0.2, -oilCan.size * 1.0, oilCan.size * 0.4, oilCan.size * 0.3);
+                    
+                    // Oil can handle
+                    this.ctx.strokeStyle = '#654321';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(oilCan.size * 0.7, -oilCan.size * 0.3, oilCan.size * 0.3, 0, Math.PI);
+                    this.ctx.stroke();
+                    
+                    // Oil can label background
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.fillRect(-oilCan.size * 0.7, -oilCan.size * 0.3, oilCan.size * 1.4, oilCan.size * 0.4);
+                    
+                    // Oil can label text
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.font = `bold ${oilCan.size * 0.25}px Arial`;
                     this.ctx.textAlign = 'center';
-                    this.ctx.fillText('OIL', 0, oilCan.size * 0.2);
+                    this.ctx.fillText('OIL', 0, oilCan.size * 0.1);
+                    
+                    // Oil can warning symbol
+                    this.ctx.fillStyle = '#FF0000';
+                    this.ctx.font = `${oilCan.size * 0.2}px Arial`;
+                    this.ctx.fillText('⚠', 0, oilCan.size * 0.4);
                     
                     // Oil droplets around can
-                    this.ctx.fillStyle = '#85C1E9';
-                    for (let i = 0; i < 3; i++) {
-                        const angle = (oilCan.bobPhase + i * 2) * 0.5;
-                        const dropletX = Math.cos(angle) * oilCan.size * 1.5;
-                        const dropletY = Math.sin(angle) * oilCan.size * 1.5;
+                    this.ctx.fillStyle = '#2E8B57';
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (oilCan.bobPhase + i * 1.5) * 0.3;
+                        const dropletX = Math.cos(angle) * oilCan.size * 1.8;
+                        const dropletY = Math.sin(angle) * oilCan.size * 1.8;
                         this.ctx.beginPath();
-                        this.ctx.arc(dropletX, dropletY, 2, 0, Math.PI * 2);
+                        this.ctx.arc(dropletX, dropletY, 1.5, 0, Math.PI * 2);
                         this.ctx.fill();
                     }
                     
@@ -2116,7 +2980,17 @@
                 
                 const pattern = melody[Math.floor(this.musicPattern / 4) % melody.length];
                 const note = pattern[this.musicPattern % pattern.length];
-                const baseFreq = 220 + (this.musicIntensity * 50);
+                
+                // Dynamic base frequency based on game state
+                let baseFreq = 220 + (this.musicIntensity * 50);
+                if (this.rocketActive) {
+                    baseFreq *= 0.8; // Lower when in slow motion
+                } else if (this.invincible) {
+                    baseFreq *= 1.2; // Higher when invincible
+                } else if (this.superCoinActive) {
+                    baseFreq *= 1.3; // Higher during super coin frenzy
+                }
+                
                 const frequency = baseFreq * Math.pow(2, note / 12);
                 
                 oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
@@ -2126,9 +3000,18 @@
                 filter.type = 'lowpass';
                 filter.frequency.setValueAtTime(800 + Math.sin(this.musicPattern * 0.5) * 200, this.audioContext.currentTime);
                 
-                // Softer volume to not clash with effects
+                // Dynamic volume based on game state
+                let volume = 0.03 * this.musicIntensity;
+                if (this.rocketActive) {
+                    volume *= 0.6; // Quieter during slow motion
+                } else if (this.invincible) {
+                    volume *= 1.3; // Louder when invincible
+                } else if (this.superCoinActive) {
+                    volume *= 1.5; // Much louder during super coin frenzy
+                }
+                
                 gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.03 * this.musicIntensity, this.audioContext.currentTime + 0.01);
+                gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
                 
                 oscillator.start(this.audioContext.currentTime);

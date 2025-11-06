@@ -1,4 +1,4 @@
-# ROBOT LYRIC - Live Web Game 🤖
+# ROBOT LYRIC by Lyric and Aria - Live Web Game 🤖
 
 A Flappy Bird-style game featuring a flying robot with progressive difficulty, built with HTML5 Canvas and JavaScript, converted from the original Unity project.
 
@@ -103,9 +103,11 @@ The original Unity game had audio features. To add audio to this web version:
 
 ---
 
-**Enjoy playing InTheAir!** 🤖✨
+**Enjoy playing ROBOT LYRIC!** 🤖✨
 
-The game is now live and ready to play at `http://localhost:3000`
+*Created by Lyric and Aria*
+
+The game is now live and ready to play at `http://localhost:3003`
 
 ## 🆕 What's New in This Version:
 
