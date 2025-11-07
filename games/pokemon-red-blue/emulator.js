@@ -1,6 +1,10 @@
-// Game Boy Emulator Integration using EmulatorJS
+// Game Boy Emulator Integration using GameBoy.js (trekawek)
+let gameboy = null;
 let currentROM = null;
-let emulatorLoaded = false;
+let canvas = null;
+let ctx = null;
+let animationFrame = null;
+let romData = null;
 
 // Key mapping for Game Boy controls
 const keyMap = {
@@ -28,8 +32,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTouchControls();
     setupKeyboardControls();
     detectMobile();
-    loadEmulatorJS();
+    
+    // Wait for GameBoy.js to load
+    waitForGameBoy(() => {
+        initializeEmulator();
+    });
 });
+
+function waitForGameBoy(callback, attempts = 0) {
+    if (typeof GameBoy !== 'undefined') {
+        callback();
+    } else if (attempts < 20) {
+        setTimeout(() => waitForGameBoy(callback, attempts + 1), 100);
+    } else {
+        showError('GameBoy.js library failed to load. Please check your internet connection and refresh the page.');
+    }
+}
 
 function showFileProtocolError() {
     const emulatorDiv = document.getElementById('emulator');
@@ -77,117 +95,25 @@ function detectMobile() {
     }
 }
 
-function loadEmulatorJS() {
+function initializeEmulator() {
+    const emulatorDiv = document.getElementById('emulator');
     const container = document.getElementById('emulatorjs-container');
-    const loading = document.querySelector('.loading');
+    const loading = emulatorDiv.querySelector('.loading');
     
-    // Make sure container is visible and ready
-    if (container) {
-        container.style.display = 'block';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.minHeight = '400px';
-    }
+    // Create canvas for emulator
+    container.innerHTML = '<canvas id="gameCanvas" width="160" height="144"></canvas>';
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
     
-    // Show loading message
-    if (loading) {
-        loading.textContent = 'Loading EmulatorJS...';
-    }
+    // Set canvas styling
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.imageRendering = 'pixelated';
+    canvas.style.imageRendering = 'crisp-edges';
+    canvas.style.backgroundColor = '#000';
     
-    // Build absolute URL for ROM file
-    // EmulatorJS may need absolute URLs to work properly
-    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const romUrl = `${baseUrl}/pokered/pokered.gbc`;
-    
-    console.log('Loading ROM from:', romUrl);
-    console.log('Current location:', window.location.href);
-    console.log('Base URL:', baseUrl);
-    
-    // Configure EmulatorJS - set ALL variables BEFORE loading script
-    window.EJS_player = '#emulatorjs-container';
-    window.EJS_core = 'gb';
-    window.EJS_gameUrl = romUrl; // Use absolute URL
-    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-    window.EJS_color = '#667eea';
-    window.EJS_startOnLoaded = true;
-    window.EJS_fullscreenOnLoaded = false;
-    window.EJS_gameName = 'Pokemon Red';
-    window.EJS_gameType = 'gb';
-    
-    // Additional settings to help with network issues
-    window.EJS_gameParent = window.location.href.split('/').slice(0, -1).join('/');
-    window.EJS_defaultControls = {
-        UP: 'ArrowUp',
-        DOWN: 'ArrowDown',
-        LEFT: 'ArrowLeft',
-        RIGHT: 'ArrowRight',
-        A: 'KeyZ',
-        B: 'KeyX',
-        START: 'Enter',
-        SELECT: 'ShiftLeft'
-    };
-    
-    // Verify ROM file is accessible before loading
-    fetch(romUrl, { method: 'HEAD' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`ROM file not accessible: ${response.status} ${response.statusText}`);
-            }
-            console.log('ROM file is accessible:', romUrl);
-            // ROM is accessible, proceed with loading
-            loadEmulatorJSScript();
-        })
-        .catch(error => {
-            console.error('ROM file check failed:', error);
-            showError(`Cannot access ROM file: ${error.message}. Please ensure the ROM files are deployed correctly.`);
-        });
-}
-
-function loadEmulatorJSScript() {
-    const container = document.getElementById('emulatorjs-container');
-    const loading = document.querySelector('.loading');
-    
-    // Load EmulatorJS script from CDN
-    const script = document.createElement('script');
-    script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-    script.crossOrigin = 'anonymous';
-    script.async = false; // Load synchronously to ensure config is read
-    
-    script.onload = () => {
-        emulatorLoaded = true;
-        console.log('EmulatorJS script loaded');
-        
-        // Wait for EmulatorJS to initialize
-        let checkCount = 0;
-        const maxChecks = 30;
-        
-        const checkInitialization = setInterval(() => {
-            checkCount++;
-            
-            // Check if container has content (iframe or canvas)
-            if (container && (container.children.length > 0 || 
-                container.querySelector('iframe') || 
-                container.querySelector('canvas') ||
-                container.innerHTML.trim() !== '')) {
-                console.log('EmulatorJS initialized successfully!');
-                clearInterval(checkInitialization);
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-            } else if (checkCount >= maxChecks) {
-                console.error('EmulatorJS failed to initialize after waiting');
-                clearInterval(checkInitialization);
-                showError('EmulatorJS loaded but failed to initialize. Please check the browser console for details. The ROM file may not be accessible.');
-            }
-        }, 500);
-    };
-    
-    script.onerror = () => {
-        console.error('Failed to load EmulatorJS from CDN');
-        showError('Failed to load emulator library. Please check your internet connection and try again.');
-    };
-    
-    document.head.appendChild(script);
+    // Load default game
+    loadGame('pokered.gbc');
 }
 
 function setupGameButtons() {
@@ -205,93 +131,105 @@ function setupGameButtons() {
 }
 
 function loadGame(romFile) {
-    if (!emulatorLoaded) {
-        // Wait for emulator to load
-        setTimeout(() => loadGame(romFile), 100);
-        return;
-    }
-    
-    currentROM = romFile;
-    const container = document.getElementById('emulatorjs-container');
     const loading = document.querySelector('.loading');
     
-    // Update loading message
     if (loading) {
         loading.textContent = `Loading ${romFile}...`;
         loading.style.display = 'block';
     }
     
-    // Build absolute URL for ROM file
-    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const romUrl = `${baseUrl}/pokered/${romFile}`;
+    currentROM = romFile;
+    const romPath = `pokered/${romFile}`;
     
-    console.log('Loading ROM from:', romUrl);
-    console.log('Current location:', window.location.href);
-    console.log('Base URL:', baseUrl);
+    // Stop previous emulation
+    if (gameboy) {
+        try {
+            if (gameboy.stop) gameboy.stop();
+            if (gameboy.pause) gameboy.pause();
+        } catch (e) {
+            console.log('Error stopping previous emulator:', e);
+        }
+        gameboy = null;
+    }
     
-    // Verify ROM file is accessible before loading
-    fetch(romUrl, { method: 'HEAD' })
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+    }
+    
+    // Load ROM file
+    fetch(romPath)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`ROM file not accessible: ${response.status} ${response.statusText}`);
+                throw new Error(`Failed to load ROM: ${response.status} ${response.statusText}`);
             }
-            console.log('ROM file is accessible:', romUrl);
+            return response.arrayBuffer();
+        })
+        .then(romBuffer => {
+            console.log('ROM loaded:', romFile, 'Size:', romBuffer.byteLength);
+            romData = new Uint8Array(romBuffer);
             
-            // Clear container
-            if (container) {
-                container.innerHTML = '';
-            }
-            
-            // Update EmulatorJS configuration
-            window.EJS_gameUrl = romUrl; // Use relative path
-            window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
-            
-            // Remove old script
-            const oldScripts = document.querySelectorAll('script[src*="loader.js"]');
-            oldScripts.forEach(script => script.remove());
-            
-            // Reload EmulatorJS with new ROM
-            const script = document.createElement('script');
-            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-            script.crossOrigin = 'anonymous';
-            script.async = false;
-            
-            script.onload = () => {
-                console.log('Game loaded:', romFile);
-                
-                // Wait for initialization
-                let checkCount = 0;
-                const maxChecks = 30;
-                
-                const checkInitialization = setInterval(() => {
-                    checkCount++;
+            // Initialize GameBoy.js emulator
+            if (typeof GameBoy !== 'undefined') {
+                try {
+                    // GameBoy.js (trekawek) API
+                    gameboy = new GameBoy();
                     
-                    if (container && (container.children.length > 0 || 
-                        container.querySelector('iframe') || 
-                        container.querySelector('canvas'))) {
-                        console.log('Game initialized successfully!');
-                        clearInterval(checkInitialization);
-                        if (loading) {
-                            loading.style.display = 'none';
-                        }
-                    } else if (checkCount >= maxChecks) {
-                        console.error('Game failed to initialize');
-                        clearInterval(checkInitialization);
-                        showError('Failed to load game. Please check the browser console for details.');
+                    // Load ROM
+                    gameboy.loadROM(romData);
+                    
+                    // Set canvas
+                    gameboy.setCanvas(canvas);
+                    
+                    // Start emulation
+                    gameboy.start();
+                    
+                    // Start emulation loop
+                    startEmulation();
+                    
+                    if (loading) {
+                        loading.style.display = 'none';
                     }
-                }, 500);
-            };
-            
-            script.onerror = () => {
-                showError('Failed to load game. Please try again.');
-            };
-            
-            document.head.appendChild(script);
+                    
+                    console.log('Game started:', romFile);
+                } catch (e) {
+                    console.error('Error initializing GameBoy.js:', e);
+                    showError('Failed to initialize emulator: ' + e.message + '. Please check the browser console for details.');
+                }
+            } else {
+                showError('GameBoy.js library not loaded. Please refresh the page.');
+            }
         })
         .catch(error => {
-            console.error('ROM file check failed:', error);
-            showError(`Cannot access ROM file: ${error.message}. Please ensure the ROM files are deployed correctly.`);
+            console.error('Error loading ROM:', error);
+            showError(`Failed to load ROM file: ${error.message}. Please ensure the ROM files are deployed correctly.`);
         });
+}
+
+function startEmulation() {
+    if (!gameboy || !canvas) return;
+    
+    function emulationLoop() {
+        if (gameboy) {
+            try {
+                // GameBoy.js handles the emulation loop internally
+                // We just need to make sure it's running
+                if (gameboy.isRunning && !gameboy.isRunning()) {
+                    gameboy.start();
+                }
+                
+                // Update frame if needed
+                if (gameboy.updateFrame) {
+                    gameboy.updateFrame();
+                }
+            } catch (e) {
+                console.error('Emulation error:', e);
+            }
+        }
+        animationFrame = requestAnimationFrame(emulationLoop);
+    }
+    
+    emulationLoop();
 }
 
 function showError(message) {
@@ -382,10 +320,15 @@ function setupKeyboardControls() {
 }
 
 function pressKey(keyName) {
-    // Send key press to EmulatorJS
-    if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
+    if (gameboy) {
         try {
-            window.EJS_controls.setKey(keyName, true);
+            if (gameboy.setKey) {
+                gameboy.setKey(keyName, true);
+            } else if (gameboy.keyDown) {
+                gameboy.keyDown(keyName);
+            } else if (gameboy.pressKey) {
+                gameboy.pressKey(keyName);
+            }
         } catch (e) {
             console.log('Error setting key:', e);
         }
@@ -393,10 +336,15 @@ function pressKey(keyName) {
 }
 
 function releaseKey(keyName) {
-    // Send key release to EmulatorJS
-    if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
+    if (gameboy) {
         try {
-            window.EJS_controls.setKey(keyName, false);
+            if (gameboy.setKey) {
+                gameboy.setKey(keyName, false);
+            } else if (gameboy.keyUp) {
+                gameboy.keyUp(keyName);
+            } else if (gameboy.releaseKey) {
+                gameboy.releaseKey(keyName);
+            }
         } catch (e) {
             console.log('Error releasing key:', e);
         }
@@ -414,18 +362,18 @@ document.addEventListener('contextmenu', (e) => {
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         // Pause emulation
-        if (typeof window.EJS_pause === 'function') {
+        if (gameboy && gameboy.pause) {
             try {
-                window.EJS_pause();
+                gameboy.pause();
             } catch (e) {
                 console.log('Error pausing:', e);
             }
         }
     } else {
         // Resume emulation
-        if (typeof window.EJS_resume === 'function') {
+        if (gameboy && gameboy.resume) {
             try {
-                window.EJS_resume();
+                gameboy.resume();
             } catch (e) {
                 console.log('Error resuming:', e);
             }
