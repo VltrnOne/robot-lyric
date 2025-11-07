@@ -19,7 +19,6 @@ const keyMap = {
 // Initialize emulator when page loads
 document.addEventListener('DOMContentLoaded', () => {
     // Only show error for file:// protocol
-    // Allow localhost, production domains, and any HTTP/HTTPS
     if (window.location.protocol === 'file:') {
         showFileProtocolError();
         return;
@@ -80,8 +79,17 @@ function detectMobile() {
 }
 
 function loadEmulatorJS() {
-    // Show loading message
+    const container = document.getElementById('emulatorjs-container');
     const loading = document.querySelector('.loading');
+    
+    // Make sure container is visible and ready
+    if (container) {
+        container.style.display = 'block';
+        container.style.width = '100%';
+        container.style.height = '100%';
+    }
+    
+    // Show loading message
     if (loading) {
         loading.textContent = 'Loading EmulatorJS...';
     }
@@ -101,20 +109,45 @@ function loadEmulatorJS() {
     const script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
     script.crossOrigin = 'anonymous';
+    script.async = true;
+    
     script.onload = () => {
         emulatorLoaded = true;
-        console.log('EmulatorJS loaded successfully');
-        // Wait for EmulatorJS to fully initialize
+        console.log('EmulatorJS script loaded');
+        
+        // Wait a bit for EmulatorJS to initialize
         setTimeout(() => {
-            if (loading) {
-                loading.style.display = 'none';
+            console.log('Checking EmulatorJS initialization...');
+            
+            // Check if EmulatorJS initialized
+            if (window.EJS_player && container) {
+                // Check if container has content
+                if (container.children.length > 0 || container.innerHTML.trim() !== '') {
+                    console.log('EmulatorJS initialized successfully');
+                    if (loading) {
+                        loading.style.display = 'none';
+                    }
+                } else {
+                    console.warn('EmulatorJS loaded but container is empty');
+                    // Try waiting a bit more
+                    setTimeout(() => {
+                        if (loading) {
+                            loading.style.display = 'none';
+                        }
+                    }, 2000);
+                }
+            } else {
+                console.error('EmulatorJS failed to initialize');
+                showError('EmulatorJS loaded but failed to initialize. Please refresh the page.');
             }
-        }, 1000);
+        }, 1500);
     };
+    
     script.onerror = () => {
         console.error('Failed to load EmulatorJS from CDN');
         showError('Failed to load emulator library. Please check your internet connection and try again.');
     };
+    
     document.head.appendChild(script);
 }
 
@@ -162,9 +195,16 @@ function loadGame(romFile) {
     
     // Reload the emulator with new ROM
     // Remove old script and reload
-    const oldScript = document.querySelector('script[src*="loader.js"]');
-    if (oldScript) {
-        oldScript.remove();
+    const oldScripts = document.querySelectorAll('script[src*="loader.js"]');
+    oldScripts.forEach(script => script.remove());
+    
+    // Clear any existing EmulatorJS state
+    if (window.EJS) {
+        try {
+            if (window.EJS.destroy) window.EJS.destroy();
+        } catch (e) {
+            console.log('Error destroying old emulator:', e);
+        }
     }
     
     // Reconfigure and reload
@@ -179,15 +219,19 @@ function loadGame(romFile) {
     const script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
     script.crossOrigin = 'anonymous';
+    script.async = true;
+    
     script.onload = () => {
         console.log('Game loaded:', romFile);
         setTimeout(() => {
             if (loading) loading.style.display = 'none';
-        }, 1000);
+        }, 1500);
     };
+    
     script.onerror = () => {
         showError('Failed to load game. Please try again.');
     };
+    
     document.head.appendChild(script);
 }
 
@@ -277,107 +321,24 @@ function setupKeyboardControls() {
 
 function pressKey(keyName) {
     // Send key press to EmulatorJS
-    // Try multiple methods as EmulatorJS API may vary
-    let keyPressed = false;
-    
-    // Method 1: Direct EJS_controls
     if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
         try {
             window.EJS_controls.setKey(keyName, true);
-            keyPressed = true;
         } catch (e) {
-            console.log('Error setting key (method 1):', e);
-        }
-    }
-    
-    // Method 2: EJS object
-    if (!keyPressed && window.EJS && typeof window.EJS.setKey === 'function') {
-        try {
-            window.EJS.setKey(keyName, true);
-            keyPressed = true;
-        } catch (e) {
-            console.log('Error setting key (method 2):', e);
-        }
-    }
-    
-    // Method 3: Dispatch keyboard event to container
-    if (!keyPressed) {
-        const container = document.getElementById('emulatorjs-container');
-        if (container) {
-            const iframe = container.querySelector('iframe');
-            if (iframe && iframe.contentWindow) {
-                try {
-                    const keyEvent = new KeyboardEvent('keydown', {
-                        key: keyName,
-                        code: getKeyCode(keyName),
-                        bubbles: true
-                    });
-                    iframe.contentWindow.dispatchEvent(keyEvent);
-                } catch (e) {
-                    console.log('Error dispatching key event:', e);
-                }
-            }
+            console.log('Error setting key:', e);
         }
     }
 }
 
 function releaseKey(keyName) {
     // Send key release to EmulatorJS
-    let keyReleased = false;
-    
-    // Method 1: Direct EJS_controls
     if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
         try {
             window.EJS_controls.setKey(keyName, false);
-            keyReleased = true;
         } catch (e) {
-            console.log('Error releasing key (method 1):', e);
+            console.log('Error releasing key:', e);
         }
     }
-    
-    // Method 2: EJS object
-    if (!keyReleased && window.EJS && typeof window.EJS.setKey === 'function') {
-        try {
-            window.EJS.setKey(keyName, false);
-            keyReleased = true;
-        } catch (e) {
-            console.log('Error releasing key (method 2):', e);
-        }
-    }
-    
-    // Method 3: Dispatch keyboard event to container
-    if (!keyReleased) {
-        const container = document.getElementById('emulatorjs-container');
-        if (container) {
-            const iframe = container.querySelector('iframe');
-            if (iframe && iframe.contentWindow) {
-                try {
-                    const keyEvent = new KeyboardEvent('keyup', {
-                        key: keyName,
-                        code: getKeyCode(keyName),
-                        bubbles: true
-                    });
-                    iframe.contentWindow.dispatchEvent(keyEvent);
-                } catch (e) {
-                    console.log('Error dispatching key release event:', e);
-                }
-            }
-        }
-    }
-}
-
-function getKeyCode(keyName) {
-    const keyCodeMap = {
-        'UP': 'ArrowUp',
-        'DOWN': 'ArrowDown',
-        'LEFT': 'ArrowLeft',
-        'RIGHT': 'ArrowRight',
-        'A': 'KeyZ',
-        'B': 'KeyX',
-        'START': 'Enter',
-        'SELECT': 'ShiftLeft'
-    };
-    return keyCodeMap[keyName] || keyName;
 }
 
 // Prevent context menu on long press for mobile
@@ -428,5 +389,5 @@ if (window.parent !== window) {
             type: 'game-ready',
             game: 'pokemon-red-blue'
         }, '*');
-    }, 1000);
+    }, 2000);
 }
