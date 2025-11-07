@@ -1,4 +1,4 @@
-// Game Boy Emulator Integration using EmulatorJS iframe embed
+// Game Boy Emulator Integration using EmulatorJS
 let currentROM = null;
 let emulatorLoaded = false;
 
@@ -94,46 +94,65 @@ function loadEmulatorJS() {
         loading.textContent = 'Loading EmulatorJS...';
     }
     
-    // Get the base URL for ROM files
-    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+    // Get absolute URL for ROM file
+    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
     const romUrl = `${baseUrl}/pokered/pokered.gbc`;
     
-    // Use EmulatorJS iframe embed method
-    // This is more reliable than the script loader
-    const iframe = document.createElement('iframe');
-    iframe.id = 'emulatorjs-iframe';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.allowFullscreen = true;
-    iframe.allow = 'gamepad; fullscreen';
+    console.log('Loading ROM from:', romUrl);
     
-    // Build EmulatorJS embed URL
-    const embedUrl = new URL('https://www.emulatorjs.org/');
-    embedUrl.searchParams.set('core', 'gb');
-    embedUrl.searchParams.set('game', romUrl);
-    embedUrl.searchParams.set('color', '#667eea');
+    // Configure EmulatorJS - set ALL variables BEFORE loading script
+    window.EJS_player = '#emulatorjs-container';
+    window.EJS_core = 'gb';
+    window.EJS_gameUrl = romUrl; // Use absolute URL
+    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+    window.EJS_color = '#667eea';
+    window.EJS_startOnLoaded = true;
+    window.EJS_fullscreenOnLoaded = false;
+    window.EJS_gameName = 'Pokemon Red';
+    window.EJS_gameParent = baseUrl;
+    window.EJS_gameType = 'gb';
     
-    iframe.src = embedUrl.toString();
+    // Load EmulatorJS script from CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+    script.crossOrigin = 'anonymous';
+    script.async = false; // Load synchronously to ensure config is read
     
-    iframe.onload = () => {
+    script.onload = () => {
         emulatorLoaded = true;
-        console.log('EmulatorJS iframe loaded');
-        if (loading) {
-            loading.style.display = 'none';
-        }
+        console.log('EmulatorJS script loaded');
+        
+        // Wait for EmulatorJS to initialize
+        let checkCount = 0;
+        const maxChecks = 30;
+        
+        const checkInitialization = setInterval(() => {
+            checkCount++;
+            
+            // Check if container has content (iframe or canvas)
+            if (container && (container.children.length > 0 || 
+                container.querySelector('iframe') || 
+                container.querySelector('canvas') ||
+                container.innerHTML.trim() !== '')) {
+                console.log('EmulatorJS initialized successfully!');
+                clearInterval(checkInitialization);
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            } else if (checkCount >= maxChecks) {
+                console.error('EmulatorJS failed to initialize after waiting');
+                clearInterval(checkInitialization);
+                showError('EmulatorJS loaded but failed to initialize. Please check the browser console for details. The ROM file may not be accessible.');
+            }
+        }, 500);
     };
     
-    iframe.onerror = () => {
-        console.error('Failed to load EmulatorJS iframe');
-        showError('Failed to load emulator. Please check your internet connection and try again.');
+    script.onerror = () => {
+        console.error('Failed to load EmulatorJS from CDN');
+        showError('Failed to load emulator library. Please check your internet connection and try again.');
     };
     
-    // Clear container and add iframe
-    if (container) {
-        container.innerHTML = '';
-        container.appendChild(iframe);
-    }
+    document.head.appendChild(script);
 }
 
 function setupGameButtons() {
@@ -151,6 +170,13 @@ function setupGameButtons() {
 }
 
 function loadGame(romFile) {
+    if (!emulatorLoaded) {
+        // Wait for emulator to load
+        setTimeout(() => loadGame(romFile), 100);
+        return;
+    }
+    
+    currentROM = romFile;
     const container = document.getElementById('emulatorjs-container');
     const loading = document.querySelector('.loading');
     
@@ -160,50 +186,62 @@ function loadGame(romFile) {
         loading.style.display = 'block';
     }
     
-    currentROM = romFile;
-    
-    // Get the base URL for ROM files
-    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+    // Get absolute URL for ROM file
+    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
     const romUrl = `${baseUrl}/pokered/${romFile}`;
     
-    // Remove old iframe
-    const oldIframe = container.querySelector('iframe');
-    if (oldIframe) {
-        oldIframe.remove();
+    console.log('Loading ROM from:', romUrl);
+    
+    // Clear container
+    if (container) {
+        container.innerHTML = '';
     }
     
-    // Create new iframe with new ROM
-    const iframe = document.createElement('iframe');
-    iframe.id = 'emulatorjs-iframe';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.allowFullscreen = true;
-    iframe.allow = 'gamepad; fullscreen';
+    // Update EmulatorJS configuration
+    window.EJS_gameUrl = romUrl; // Use absolute URL
+    window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
     
-    // Build EmulatorJS embed URL
-    const embedUrl = new URL('https://www.emulatorjs.org/');
-    embedUrl.searchParams.set('core', 'gb');
-    embedUrl.searchParams.set('game', romUrl);
-    embedUrl.searchParams.set('color', '#667eea');
+    // Remove old script
+    const oldScripts = document.querySelectorAll('script[src*="loader.js"]');
+    oldScripts.forEach(script => script.remove());
     
-    iframe.src = embedUrl.toString();
+    // Reload EmulatorJS with new ROM
+    const script = document.createElement('script');
+    script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+    script.crossOrigin = 'anonymous';
+    script.async = false;
     
-    iframe.onload = () => {
+    script.onload = () => {
         console.log('Game loaded:', romFile);
-        if (loading) {
-            loading.style.display = 'none';
-        }
+        
+        // Wait for initialization
+        let checkCount = 0;
+        const maxChecks = 30;
+        
+        const checkInitialization = setInterval(() => {
+            checkCount++;
+            
+            if (container && (container.children.length > 0 || 
+                container.querySelector('iframe') || 
+                container.querySelector('canvas'))) {
+                console.log('Game initialized successfully!');
+                clearInterval(checkInitialization);
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            } else if (checkCount >= maxChecks) {
+                console.error('Game failed to initialize');
+                clearInterval(checkInitialization);
+                showError('Failed to load game. Please check the browser console for details.');
+            }
+        }, 500);
     };
     
-    iframe.onerror = () => {
+    script.onerror = () => {
         showError('Failed to load game. Please try again.');
     };
     
-    // Add iframe to container
-    if (container) {
-        container.appendChild(iframe);
-    }
+    document.head.appendChild(script);
 }
 
 function showError(message) {
@@ -216,6 +254,9 @@ function showError(message) {
             <div style="color: red; text-align: center; padding: 20px;">
                 <h3 style="margin-bottom: 10px;">Error</h3>
                 <p>${message}</p>
+                <p style="margin-top: 10px; font-size: 12px; opacity: 0.8;">
+                    Check browser console (F12) for more details
+                </p>
                 <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
                     Reload Page
                 </button>
@@ -291,61 +332,54 @@ function setupKeyboardControls() {
 }
 
 function pressKey(keyName) {
-    // Send key press to EmulatorJS iframe
-    const iframe = document.getElementById('emulatorjs-iframe');
-    if (iframe && iframe.contentWindow) {
+    // Send key press to EmulatorJS
+    if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
         try {
-            // Try to send key event to iframe
-            const keyEvent = new KeyboardEvent('keydown', {
-                key: keyName,
-                code: getKeyCode(keyName),
-                bubbles: true,
-                cancelable: true
-            });
-            iframe.contentWindow.dispatchEvent(keyEvent);
+            window.EJS_controls.setKey(keyName, true);
         } catch (e) {
-            // Cross-origin restrictions may prevent this
-            console.log('Cannot send key to iframe (cross-origin):', e);
+            console.log('Error setting key:', e);
         }
     }
 }
 
 function releaseKey(keyName) {
-    // Send key release to EmulatorJS iframe
-    const iframe = document.getElementById('emulatorjs-iframe');
-    if (iframe && iframe.contentWindow) {
+    // Send key release to EmulatorJS
+    if (window.EJS_controls && typeof window.EJS_controls.setKey === 'function') {
         try {
-            const keyEvent = new KeyboardEvent('keyup', {
-                key: keyName,
-                code: getKeyCode(keyName),
-                bubbles: true,
-                cancelable: true
-            });
-            iframe.contentWindow.dispatchEvent(keyEvent);
+            window.EJS_controls.setKey(keyName, false);
         } catch (e) {
-            console.log('Cannot send key release to iframe (cross-origin):', e);
+            console.log('Error releasing key:', e);
         }
     }
-}
-
-function getKeyCode(keyName) {
-    const keyCodeMap = {
-        'UP': 'ArrowUp',
-        'DOWN': 'ArrowDown',
-        'LEFT': 'ArrowLeft',
-        'RIGHT': 'ArrowRight',
-        'A': 'KeyZ',
-        'B': 'KeyX',
-        'START': 'Enter',
-        'SELECT': 'ShiftLeft'
-    };
-    return keyCodeMap[keyName] || keyName;
 }
 
 // Prevent context menu on long press for mobile
 document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.dpad-btn, .action-btn')) {
         e.preventDefault();
+    }
+});
+
+// Handle visibility change to pause/resume emulation
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Pause emulation
+        if (typeof window.EJS_pause === 'function') {
+            try {
+                window.EJS_pause();
+            } catch (e) {
+                console.log('Error pausing:', e);
+            }
+        }
+    } else {
+        // Resume emulation
+        if (typeof window.EJS_resume === 'function') {
+            try {
+                window.EJS_resume();
+            } catch (e) {
+                console.log('Error resuming:', e);
+            }
+        }
     }
 });
 
