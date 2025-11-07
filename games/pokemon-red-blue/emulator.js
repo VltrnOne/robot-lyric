@@ -145,7 +145,21 @@ function loadGame(romFile) {
     }
     
     currentROM = romFile;
-    const romPath = `pokered/${romFile}`;
+    
+    // Build ROM path - try relative first, then absolute if needed
+    // The ROM files are in pokered/ directory relative to index.html
+    let romPath = `pokered/${romFile}`;
+    
+    // For GitHub Pages, ensure we use the correct base path
+    const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+    if (basePath && !romPath.startsWith('/')) {
+        // Use absolute path from site root
+        romPath = `${basePath}/pokered/${romFile}`;
+    }
+    
+    console.log('Loading ROM from path:', romPath);
+    console.log('Current location:', window.location.href);
+    console.log('Base path:', basePath);
     
     // Stop previous emulation
     if (gameboy) {
@@ -167,8 +181,9 @@ function loadGame(romFile) {
     // Load ROM file
     fetch(romPath)
         .then(response => {
+            console.log('ROM fetch response:', response.status, response.statusText, response.url);
             if (!response.ok) {
-                throw new Error(`Failed to load ROM: ${response.status} ${response.statusText}`);
+                throw new Error(`Failed to load ROM: ${response.status} ${response.statusText}. Tried: ${romPath}`);
             }
             return response.arrayBuffer();
         })
