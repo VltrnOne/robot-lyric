@@ -973,14 +973,30 @@ body {
         gap: 10px;
     }
 
+    /* Make HUD overlay on mobile instead of taking up layout space */
     #player-hud {
+        position: absolute;
+        bottom: 210px; /* Above mobile controls */
+        left: 5px;
+        right: 5px;
         padding: 8px 10px;
         gap: 10px;
-        font-size: 12px;
+        font-size: 11px;
+        background: rgba(26, 58, 26, 0.85); /* More transparent */
+        backdrop-filter: blur(5px);
+        border-radius: 10px;
+        z-index: 8; /* Above canvas, below overlays */
+        max-height: 30vh; /* Don't take up more than 30% of screen */
+        overflow-y: auto;
     }
 
     .hud-section h3 {
-        font-size: 14px;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .hud-section {
+        padding: 5px;
     }
 
     #game-footer {

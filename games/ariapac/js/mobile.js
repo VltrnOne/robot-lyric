@@ -66,7 +66,8 @@ class MobileHandler {
         const mobileControls = document.getElementById('mobile-controls');
 
         const headerHeight = header ? header.offsetHeight : 0;
-        const hudHeight = hud ? hud.offsetHeight : 0;
+        // Don't include HUD height on mobile - it overlays the canvas
+        const hudHeight = 0; // HUD will overlay, not push content
         const controlsHeight = this.controlsVisible ? 200 : 0;
 
         const availableWidth = window.innerWidth - 10;
