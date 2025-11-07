@@ -45,6 +45,9 @@ class AriaPacGame {
         this.renderer = new Renderer();
         this.powerupManager = new PowerupManager();
 
+        // Initialize mobile handler
+        this.mobileHandler = initMobileHandler(this.inputHandler);
+
         // Setup UI event listeners
         this.setupUIEvents();
         this.setupAudioControls();
@@ -198,13 +201,16 @@ class AriaPacGame {
             case GameState.MENU:
                 document.getElementById('menu-overlay').classList.add('active');
                 audioSystem.stopBackgroundMusic();
+                if (this.mobileHandler) this.mobileHandler.hideControls();
                 break;
             case GameState.INSTRUCTIONS:
                 document.getElementById('instructions-overlay').classList.add('active');
+                if (this.mobileHandler) this.mobileHandler.hideControls();
                 break;
             case GameState.PLAYING:
                 this.startGameLoop();
                 audioSystem.startBackgroundMusic();
+                if (this.mobileHandler) this.mobileHandler.showControls();
                 break;
             case GameState.PAUSED:
                 document.getElementById('pause-overlay').classList.add('active');
@@ -214,6 +220,7 @@ class AriaPacGame {
                 break;
             case GameState.GAME_OVER:
                 this.handleGameOver();
+                if (this.mobileHandler) this.mobileHandler.hideControls();
                 break;
         }
     }

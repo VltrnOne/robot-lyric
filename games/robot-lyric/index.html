@@ -1222,10 +1222,10 @@
                 this.lastSuperCoinTime = 0;
                 this.lastRocketTime = 0;
                 this.lastRocketBoostTime = 0;
-                // SIMPLIFIED POWER-UP SYSTEM - Reduced frequency for cleaner gameplay
-                this.coinInterval = 5000; // 5 seconds between coins (main power-up)
-                this.rocketBoostInterval = 18000; // 18 seconds between rocket boosts (less frequent)
-                this.rocketInterval = 12000; // 12 seconds between slow-mo rockets (was 8s)
+                // BALANCED POWER-UP SYSTEM - Reduced frequency for competitive gameplay
+                this.coinInterval = 8000; // 8 seconds between coins (was 5s - too frequent)
+                this.rocketBoostInterval = 30000; // 30 seconds between rocket boosts (was 18s - much rarer)
+                this.rocketInterval = 20000; // 20 seconds between slow-mo rockets (was 12s - rarer)
                 
                 // SIMPLIFIED Coin rarity system - Reduced from 7 to 4 tiers
                 this.coinRarities = [
@@ -1277,8 +1277,7 @@
                     playTime: 0
                 };
                 this.achievementBadgesElement = null;
-                this.superCoinInterval = 30000; // 30 seconds between super coins (rare)
-                this.rocketInterval = 8000; // 8 seconds between rockets
+                this.superCoinInterval = 45000; // 45 seconds between super coins (was 30s - much rarer)
                 this.superCoinActive = false;
                 this.superCoinTimeLeft = 0;
                 
@@ -1293,7 +1292,7 @@
                 
                 // Oil can system
                 this.oilCans = [];
-                this.oilCanInterval = 15000; // 15 seconds between oil cans
+                this.oilCanInterval = 25000; // 25 seconds between oil cans (was 15s - rarer)
                 this.lastOilCanTime = 0;
                 
                 // Audio system
@@ -2388,12 +2387,57 @@
                     // IMPROVED DIFFICULTY CURVE - Flappy Bird style progression
                     // Speed increases more aggressively but smoothly
                     this.obstacleSpeed = this.baseObstacleSpeed + (this.level - 1) * 1.2; // Was 0.8
+
+                    // AGGRESSIVE SCALING AFTER LEVEL 10 - Extra speed boost
+                    if (this.level > 10) {
+                        this.obstacleSpeed += (this.level - 10) * 0.3; // Additional speed increase
+                    }
+
                     // Obstacles spawn faster
                     this.obstacleInterval = Math.max(1200, 2500 - (this.level - 1) * 250); // Was 1500/200
 
+                    // AGGRESSIVE SCALING AFTER LEVEL 15 - Even faster spawns
+                    if (this.level > 15) {
+                        this.obstacleInterval = Math.max(800, this.obstacleInterval - 100);
+                    }
+
                     // Dynamic gap sizing - gradually shrinks but stays fair
-                    const gapReduction = Math.min((this.level - 1) * 5, this.baseObstacleGap - this.minObstacleGap);
+                    let gapReduction = (this.level - 1) * 5;
+                    // MORE AGGRESSIVE GAP REDUCTION AFTER LEVEL 10
+                    if (this.level > 10) {
+                        gapReduction += (this.level - 10) * 3; // Extra 3px per level after 10
+                    }
+                    gapReduction = Math.min(gapReduction, this.baseObstacleGap - this.minObstacleGap);
                     this.obstacleGap = this.baseObstacleGap - gapReduction;
+
+                    // PROGRESSIVE POWER-UP SPAWN SCALING - Make power-ups rarer at higher levels
+                    if (this.level > 5) {
+                        this.coinInterval = 8000 + (this.level - 5) * 1000; // Gets slower
+                        this.coinInterval = Math.min(this.coinInterval, 15000); // Cap at 15 seconds
+                    }
+
+                    // Scale other power-ups at higher levels
+                    if (this.level > 10) {
+                        this.rocketInterval = 20000 + (this.level - 10) * 1500; // Gets slower
+                        this.rocketBoostInterval = 30000 + (this.level - 10) * 2000; // Gets slower
+                        this.oilCanInterval = 25000 + (this.level - 10) * 1500; // Gets slower
+                        this.superCoinInterval = 45000 + (this.level - 10) * 2500; // Gets slower
+
+                        // Cap intervals to prevent them from becoming too rare
+                        this.rocketInterval = Math.min(this.rocketInterval, 40000); // Max 40s
+                        this.rocketBoostInterval = Math.min(this.rocketBoostInterval, 60000); // Max 60s
+                        this.oilCanInterval = Math.min(this.oilCanInterval, 45000); // Max 45s
+                        this.superCoinInterval = Math.min(this.superCoinInterval, 75000); // Max 75s
+                    }
+
+                    // ADJUST COIN RARITIES AT HIGH LEVELS - Remove diamond coins after level 15
+                    if (this.level > 15) {
+                        this.coinRarities = [
+                            { name: 'Bronze', color: '#CD7F32', value: 1, rarity: 0.60, lifetime: 20 },
+                            { name: 'Silver', color: '#C0C0C0', value: 2, rarity: 0.30, lifetime: 20 },
+                            { name: 'Gold', color: '#FFD700', value: 3, rarity: 0.10, lifetime: 15 }
+                        ];
+                    }
 
                     // Update music intensity
                     this.updateMusicIntensity();
@@ -2881,7 +2925,10 @@
             collectCoin(coin) {
                 try {
                     // Immediate, safe collection (no blocking operations)
-                    this.shieldCount = (this.shieldCount || 0) + 1;
+                    // SHIELD CAP: Maximum 5 shields to maintain challenge
+                    const shieldValue = (coin && coin.rarity && coin.rarity.value) || 1;
+                    this.shieldCount = (this.shieldCount || 0) + shieldValue;
+                    this.shieldCount = Math.min(this.shieldCount, 5); // Hard cap at 5 shields
                     this.score = (this.score || 0) + 0.5;
                     
                     // Enable Player 2 after first coin is collected
@@ -3937,34 +3984,49 @@
             // Power-up Systems
             generatePowerUps() {
                 const now = Date.now();
-                
-                // Generate coins (reduced frequency)
+
+                // SPAWN PROBABILITY SYSTEM - Reduce spawns at higher levels to prevent clutter
+                // Calculate spawn chances based on level
+                const coinSpawnChance = this.level > 10 ? 0.7 : 1.0; // 70% spawn rate after level 10
+                const powerUpSpawnChance = this.level > 15 ? 0.6 : (this.level > 10 ? 0.8 : 1.0); // 80% after L10, 60% after L15
+
+                // Generate coins (reduced frequency with probability check)
                 if (now - this.lastCoinTime > this.coinInterval) {
-                    this.createCoin();
+                    if (Math.random() < coinSpawnChance) {
+                        this.createCoin();
+                    }
                     this.lastCoinTime = now;
                 }
-                
-                // Generate super coins (rare)
+
+                // Generate super coins (rare with probability check)
                 if (now - this.lastSuperCoinTime > this.superCoinInterval) {
-                    this.createSuperCoin();
+                    if (Math.random() < powerUpSpawnChance) {
+                        this.createSuperCoin();
+                    }
                     this.lastSuperCoinTime = now;
                 }
-                
-                // Generate oil cans (health restoration)
+
+                // Generate oil cans (health restoration with probability check)
                 if (now - this.lastOilCanTime > this.oilCanInterval) {
-                    this.createOilCan();
+                    if (Math.random() < powerUpSpawnChance) {
+                        this.createOilCan();
+                    }
                     this.lastOilCanTime = now;
                 }
-                
-                // Generate rockets
+
+                // Generate rockets (with probability check)
                 if (now - this.lastRocketTime > this.rocketInterval) {
-                    this.createRocket();
+                    if (Math.random() < powerUpSpawnChance) {
+                        this.createRocket();
+                    }
                     this.lastRocketTime = now;
                 }
-                
-                // Generate rocket boosts
+
+                // Generate rocket boosts (with probability check)
                 if (now - this.lastRocketBoostTime > this.rocketBoostInterval) {
-                    this.createRocketBoost();
+                    if (Math.random() < powerUpSpawnChance) {
+                        this.createRocketBoost();
+                    }
                     this.lastRocketBoostTime = now;
                 }
                 

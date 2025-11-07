@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="AriaPac - A 2-player Jurassic Park themed Pacman game">
     <title>AriaPac - Safari vs Dinosaurs</title>
     <link rel="stylesheet" href="css/style.css">
@@ -207,6 +210,60 @@
             </div>
         </div>
 
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls" class="mobile-controls hidden">
+            <!-- Left side - Player 1 Movement -->
+            <div class="mobile-control-section left">
+                <div class="d-pad">
+                    <button class="d-pad-btn up" data-key="w" data-player="1" data-action="up">↑</button>
+                    <button class="d-pad-btn left" data-key="a" data-player="1" data-action="left">←</button>
+                    <button class="d-pad-btn center"></button>
+                    <button class="d-pad-btn right" data-key="d" data-player="1" data-action="right">→</button>
+                    <button class="d-pad-btn down" data-key="s" data-player="1" data-action="down">↓</button>
+                </div>
+                <div class="control-label">P1 Move</div>
+            </div>
+
+            <!-- Center - Player 1 Actions -->
+            <div class="mobile-control-section center-left">
+                <button class="action-btn sprint" data-key="Shift" data-player="1">Sprint</button>
+                <div class="freeze-grid">
+                    <button class="freeze-btn red" data-key="1" data-player="1">F1</button>
+                    <button class="freeze-btn blue" data-key="2" data-player="1">F2</button>
+                    <button class="freeze-btn green" data-key="3" data-player="1">F3</button>
+                    <button class="freeze-btn orange" data-key="4" data-player="1">F4</button>
+                </div>
+                <div class="control-label">P1 Powers</div>
+            </div>
+
+            <!-- Center - Player 2 Actions -->
+            <div class="mobile-control-section center-right">
+                <button class="action-btn ability" data-key=" " data-player="2">Ability</button>
+                <div class="dino-grid">
+                    <button class="dino-btn raptor" data-key="u" data-player="2">Raptor</button>
+                    <button class="dino-btn ptero" data-key="o" data-player="2">Ptero</button>
+                    <button class="dino-btn trike" data-key="p" data-player="2">Trike</button>
+                    <button class="dino-btn trex" data-key="[" data-player="2">T-Rex</button>
+                </div>
+                <div class="control-label">P2 Dinos</div>
+            </div>
+
+            <!-- Right side - Player 2 Movement -->
+            <div class="mobile-control-section right">
+                <div class="d-pad">
+                    <button class="d-pad-btn up" data-key="i" data-player="2" data-action="up">↑</button>
+                    <button class="d-pad-btn left" data-key="j" data-player="2" data-action="left">←</button>
+                    <button class="d-pad-btn center"></button>
+                    <button class="d-pad-btn right" data-key="l" data-player="2" data-action="right">→</button>
+                    <button class="d-pad-btn down" data-key="k" data-player="2" data-action="down">↓</button>
+                </div>
+                <div class="control-label">P2 Move</div>
+            </div>
+
+            <!-- Pause Button -->
+            <button id="mobile-pause-btn" class="mobile-pause-btn">❚❚</button>
+        </div>
+
         <!-- Footer -->
         <footer id="game-footer">
             <div class="footer-controls">
@@ -253,6 +310,7 @@
     <script src="js/constants.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/input.js"></script>
+    <script src="js/mobile.js"></script>
     <script src="js/renderer.js"></script>
     <script src="js/maze.js"></script>
     <script src="js/powerups.js"></script>

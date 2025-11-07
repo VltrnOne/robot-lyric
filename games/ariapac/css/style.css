@@ -19,6 +19,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: fixed;
+    width: 100%;
+    touch-action: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 #game-wrapper {
@@ -90,6 +95,7 @@ body {
     image-rendering: -moz-crisp-edges;
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
+    touch-action: none;
 }
 
 #bg-layer {
@@ -707,4 +713,390 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+/* ==================== MOBILE TOUCH CONTROLS ==================== */
+.mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to top, rgba(26, 46, 26, 0.95) 0%, rgba(26, 46, 26, 0.8) 100%);
+    border-top: 2px solid #3d5a3d;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    z-index: 1000;
+    gap: 5px;
+    touch-action: none;
+}
+
+.mobile-controls.hidden {
+    display: none;
+}
+
+.mobile-control-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.control-label {
+    font-size: 10px;
+    color: #aaaaaa;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* D-Pad Controls */
+.d-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 100%;
+    max-width: 120px;
+}
+
+.d-pad-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 35px;
+    background: linear-gradient(135deg, #3d5a3d 0%, #2a4a2a 100%);
+    border: 2px solid #4a6a4a;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.d-pad-btn:active {
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+    border-color: #ffd700;
+    transform: scale(0.95);
+}
+
+.d-pad-btn.center {
+    background: transparent;
+    border: none;
+    pointer-events: none;
+}
+
+/* Action Buttons */
+.action-btn {
+    width: 100%;
+    max-width: 100px;
+    height: 40px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+    border: 2px solid #ffaa00;
+    border-radius: 8px;
+    color: #1a2e1a;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s ease;
+    margin-bottom: 5px;
+}
+
+.action-btn:active {
+    background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%);
+    transform: scale(0.95);
+}
+
+/* Freeze Power Buttons */
+.freeze-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    width: 100%;
+    max-width: 100px;
+}
+
+.freeze-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 30px;
+    border: 2px solid;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s ease;
+}
+
+.freeze-btn.red {
+    background: rgba(220, 20, 60, 0.7);
+    border-color: #dc143c;
+}
+
+.freeze-btn.blue {
+    background: rgba(65, 105, 225, 0.7);
+    border-color: #4169e1;
+}
+
+.freeze-btn.green {
+    background: rgba(34, 139, 34, 0.7);
+    border-color: #228b22;
+}
+
+.freeze-btn.orange {
+    background: rgba(255, 140, 0, 0.7);
+    border-color: #ff8c00;
+}
+
+.freeze-btn:active {
+    transform: scale(0.9);
+    filter: brightness(1.3);
+}
+
+/* Dinosaur Selection Buttons */
+.dino-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    width: 100%;
+    max-width: 100px;
+}
+
+.dino-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 30px;
+    border: 2px solid;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s ease;
+}
+
+.dino-btn.raptor {
+    background: rgba(220, 20, 60, 0.7);
+    border-color: #dc143c;
+}
+
+.dino-btn.ptero {
+    background: rgba(65, 105, 225, 0.7);
+    border-color: #4169e1;
+}
+
+.dino-btn.trike {
+    background: rgba(34, 139, 34, 0.7);
+    border-color: #228b22;
+}
+
+.dino-btn.trex {
+    background: rgba(255, 140, 0, 0.7);
+    border-color: #ff8c00;
+}
+
+.dino-btn:active {
+    transform: scale(0.9);
+    filter: brightness(1.3);
+}
+
+/* Mobile Pause Button */
+.mobile-pause-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: rgba(61, 90, 61, 0.9);
+    border: 2px solid #ffd700;
+    border-radius: 50%;
+    color: #ffd700;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 10;
+}
+
+.mobile-pause-btn:active {
+    background: rgba(255, 215, 0, 0.3);
+    transform: scale(0.95);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    #game-wrapper {
+        padding: 5px;
+    }
+
+    #game-header {
+        padding: 8px 10px;
+    }
+
+    #game-header h1 {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+
+    #game-info {
+        font-size: 12px;
+        gap: 10px;
+    }
+
+    #player-hud {
+        padding: 8px 10px;
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .hud-section h3 {
+        font-size: 14px;
+    }
+
+    #game-footer {
+        padding: 5px 10px;
+    }
+
+    .controls-hint {
+        display: none;
+    }
+
+    /* Adjust game container for mobile controls */
+    #game-container {
+        margin-bottom: 0;
+    }
+
+    .mobile-controls:not(.hidden) ~ #game-footer {
+        display: none;
+    }
+}
+
+/* Landscape Mode Optimizations */
+@media (max-width: 896px) and (orientation: landscape) {
+    #game-wrapper {
+        max-width: 100%;
+    }
+
+    #game-header {
+        padding: 5px 10px;
+    }
+
+    #game-header h1 {
+        font-size: 16px;
+        margin-bottom: 3px;
+    }
+
+    #game-info {
+        font-size: 11px;
+        gap: 8px;
+    }
+
+    #player-hud {
+        padding: 5px 8px;
+        gap: 8px;
+    }
+
+    .hud-section h3 {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .mobile-controls {
+        height: 150px;
+        padding: 5px;
+    }
+
+    .d-pad {
+        max-width: 100px;
+    }
+
+    .d-pad-btn {
+        min-height: 28px;
+        font-size: 16px;
+    }
+
+    .action-btn {
+        height: 35px;
+        font-size: 12px;
+        max-width: 80px;
+    }
+
+    .freeze-grid,
+    .dino-grid {
+        max-width: 80px;
+    }
+
+    .freeze-btn,
+    .dino-btn {
+        min-height: 25px;
+        font-size: 9px;
+    }
+
+    .control-label {
+        font-size: 9px;
+    }
+
+    .mobile-pause-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+}
+
+/* Portrait Mode Optimizations */
+@media (max-width: 480px) and (orientation: portrait) {
+    #game-header h1 {
+        font-size: 18px;
+    }
+
+    #game-info {
+        font-size: 11px;
+    }
+
+    .mobile-controls {
+        height: 180px;
+    }
+
+    .d-pad {
+        max-width: 90px;
+    }
+
+    .d-pad-btn {
+        min-height: 30px;
+    }
+
+    .freeze-grid,
+    .dino-grid {
+        max-width: 75px;
+    }
+
+    .action-btn {
+        max-width: 75px;
+        height: 35px;
+    }
 }
