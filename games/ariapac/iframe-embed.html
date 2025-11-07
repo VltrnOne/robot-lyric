@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AriaPac - Iframe Embed Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #aaaaaa;
+            margin-bottom: 20px;
+        }
+
+        .game-wrapper {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.fullscreen {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn.reload {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* Responsive Iframe Container */
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            max-width: 896px;
+            margin: 0 auto;
+            background: #000000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
+        }
+
+        .iframe-aspect-ratio {
+            position: relative;
+            padding-bottom: 110.71%; /* 992/896 = 1.1071 ratio */
+            height: 0;
+        }
+
+        #game-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 20px;
+            color: #ffd700;
+        }
+
+        /* Info Section */
+        .info-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .info-section p {
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 10px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            color: #cccccc;
+            line-height: 1.8;
+        }
+
+        .info-section code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .info-section {
+                padding: 15px;
+            }
+
+            .info-section h2 {
+                font-size: 20px;
+            }
+        }
+
+        /* Fullscreen styles */
+        .iframe-container:fullscreen {
+            max-width: 100%;
+        }
+
+        .iframe-container:-webkit-full-screen {
+            max-width: 100%;
+        }
+
+        .iframe-container:-moz-full-screen {
+            max-width: 100%;
+        }
+
+        .iframe-container:-ms-fullscreen {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AriaPac - Safari vs Dinosaurs</h1>
+            <p class="subtitle">2-Player Jurassic Park Themed Pacman Game</p>
+        </header>
+
+        <div class="game-wrapper">
+            <!-- Control Buttons -->
+            <div class="controls">
+                <button class="btn fullscreen" onclick="toggleFullscreen()">
+                    <span id="fullscreen-text">🖵 Enter Fullscreen</span>
+                </button>
+                <button class="btn reload" onclick="reloadGame()">
+                    ↻ Reload Game
+                </button>
+            </div>
+
+            <!-- Game Iframe -->
+            <div class="iframe-container" id="iframe-container">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading AriaPac...</div>
+                </div>
+
+                <div class="iframe-aspect-ratio">
+                    <iframe
+                        id="game-iframe"
+                        src="index.html"
+                        allowfullscreen
+                        allow="autoplay; fullscreen"
+                        title="AriaPac - Safari vs Dinosaurs"
+                        loading="eager"
+                        onload="hideLoading()">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Information -->
+        <div class="info-section">
+            <h2>How to Play</h2>
+            <p><strong>Player 1 - Safari Explorer:</strong></p>
+            <ul>
+                <li><strong>Movement:</strong> WASD or Arrow Keys</li>
+                <li><strong>Sprint:</strong> Hold Shift (uses stamina)</li>
+                <li><strong>Freeze Powers:</strong> Press 1 (Red), 2 (Blue), 3 (Green), 4 (Orange)</li>
+                <li><strong>Goal:</strong> Collect all pellets while avoiding dinosaurs</li>
+            </ul>
+
+            <p style="margin-top: 15px;"><strong>Player 2 - Dinosaur Controller:</strong></p>
+            <ul>
+                <li><strong>Movement:</strong> I/J/K/L keys</li>
+                <li><strong>Switch Dinosaurs:</strong> U (Raptor), O (Pterodactyl), P (Triceratops), [ (T-Rex)</li>
+                <li><strong>Special Ability:</strong> Space Bar</li>
+                <li><strong>Cycle Dinosaurs:</strong> Tab</li>
+                <li><strong>Goal:</strong> Catch the safari explorer</li>
+            </ul>
+
+            <p style="margin-top: 15px;"><strong>System Controls:</strong></p>
+            <ul>
+                <li><strong>Pause:</strong> ESC key</li>
+                <li><strong>Fullscreen:</strong> F11 or button above</li>
+                <li><strong>Mute:</strong> Audio button in game footer</li>
+            </ul>
+        </div>
+
+        <!-- Embedding Instructions -->
+        <div class="info-section">
+            <h2>Embed This Game</h2>
+            <p>To embed AriaPac on your website, use the following code:</p>
+            <p style="margin-top: 10px;"><strong>Basic Embed:</strong></p>
+            <pre style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; overflow-x: auto; color: #ffd700; font-size: 14px;"><code>&lt;iframe
+    src="https://vltrngames.com/ariapac/index.html"
+    width="896"
+    height="992"
+    frameborder="0"
+    allowfullscreen
+    allow="autoplay; fullscreen"
+    title="AriaPac - Safari vs Dinosaurs"&gt;
+&lt;/iframe&gt;</code></pre>
+
+            <p style="margin-top: 15px;"><strong>Responsive Embed:</strong></p>
+            <pre style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; overflow-x: auto; color: #ffd700; font-size: 14px;"><code>&lt;div style="position: relative; width: 100%; max-width: 896px; margin: 0 auto;"&gt;
+    &lt;div style="position: relative; padding-bottom: 110.71%; height: 0;"&gt;
+        &lt;iframe
+            src="https://vltrngames.com/ariapac/index.html"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+            allowfullscreen
+            allow="autoplay; fullscreen"
+            title="AriaPac - Safari vs Dinosaurs"&gt;
+        &lt;/iframe&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+        </div>
+
+        <!-- Technical Information -->
+        <div class="info-section">
+            <h2>Technical Information</h2>
+            <ul>
+                <li><strong>Game Type:</strong> HTML5 Canvas Game</li>
+                <li><strong>No External Dependencies:</strong> Pure vanilla JavaScript</li>
+                <li><strong>Audio:</strong> Procedurally generated using Web Audio API</li>
+                <li><strong>Performance:</strong> 60 FPS target on all modern browsers</li>
+                <li><strong>File Size:</strong> ~50KB total (uncompressed)</li>
+                <li><strong>Browser Support:</strong> Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</li>
+                <li><strong>Mobile:</strong> Keyboard required (touch controls not yet implemented)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Hide loading overlay when iframe loads
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.add('hidden');
+        }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            const container = document.getElementById('iframe-container');
+            const text = document.getElementById('fullscreen-text');
+
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.mozRequestFullScreen) {
+                    container.mozRequestFullScreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                text.textContent = '⇲ Exit Fullscreen';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                text.textContent = '🖵 Enter Fullscreen';
+            }
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+        function updateFullscreenButton() {
+            const text = document.getElementById('fullscreen-text');
+            if (document.fullscreenElement) {
+                text.textContent = '⇲ Exit Fullscreen';
+            } else {
+                text.textContent = '🖵 Enter Fullscreen';
+            }
+        }
+
+        // Reload game
+        function reloadGame() {
+            const iframe = document.getElementById('game-iframe');
+            const overlay = document.getElementById('loading-overlay');
+
+            // Show loading overlay
+            overlay.classList.remove('hidden');
+
+            // Reload iframe
+            iframe.src = iframe.src;
+        }
+
+        // Optional: Communication between parent and iframe
+        // (if you want to send messages to/from the game)
+        window.addEventListener('message', function(event) {
+            // Verify origin for security
+            // if (event.origin !== 'https://vltrngames.com') return;
+
+            // Handle messages from the game iframe
+            if (event.data.type === 'gameLoaded') {
+                console.log('Game loaded successfully');
+                hideLoading();
+            } else if (event.data.type === 'scoreUpdate') {
+                console.log('Score:', event.data.score);
+                // You could update a score display outside the iframe
+            } else if (event.data.type === 'levelComplete') {
+                console.log('Level completed:', event.data.level);
+            }
+        });
+
+        // Optional: Send messages to the game
+        function sendMessageToGame(message) {
+            const iframe = document.getElementById('game-iframe');
+            iframe.contentWindow.postMessage(message, '*');
+            // In production, replace '*' with your domain: 'https://vltrngames.com'
+        }
+
+        // Example: Pause the game from parent window
+        function pauseGameFromParent() {
+            sendMessageToGame({ type: 'pause' });
+        }
+
+        // Example: Mute the game from parent window
+        function muteGameFromParent() {
+            sendMessageToGame({ type: 'mute' });
+        }
+    </script>
+</body>
+</html>

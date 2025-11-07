@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AriaPac - A 2-player Jurassic Park themed Pacman game">
+    <title>AriaPac - Safari vs Dinosaurs</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-wrapper">
+        <!-- Game Header -->
+        <header id="game-header">
+            <h1>AriaPac</h1>
+            <div id="game-info">
+                <div class="info-section">
+                    <span class="label">Level:</span>
+                    <span id="level-display">1</span>
+                </div>
+                <div class="info-section">
+                    <span class="label">Score:</span>
+                    <span id="score-display">0</span>
+                </div>
+                <div class="info-section">
+                    <span class="label">High Score:</span>
+                    <span id="high-score-display">0</span>
+                </div>
+                <div class="info-section">
+                    <span class="label">Lives:</span>
+                    <span id="lives-display">3</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Container -->
+        <div id="game-container">
+            <!-- Canvas Layers -->
+            <canvas id="bg-layer"></canvas>
+            <canvas id="entity-layer"></canvas>
+            <canvas id="ui-layer"></canvas>
+
+            <!-- Game Overlays -->
+            <div id="menu-overlay" class="overlay active">
+                <div class="menu-content">
+                    <h2>AriaPac</h2>
+                    <p class="subtitle">Safari Explorer vs Dinosaurs</p>
+                    <div class="menu-buttons">
+                        <button id="start-game-btn" class="btn-primary">Start Game</button>
+                        <button id="instructions-btn" class="btn-secondary">Instructions</button>
+                        <button id="settings-btn" class="btn-secondary">Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="instructions-overlay" class="overlay">
+                <div class="instructions-content">
+                    <h2>How to Play</h2>
+
+                    <div class="player-instructions">
+                        <h3>Player 1 - Safari Explorer</h3>
+                        <ul>
+                            <li><strong>Movement:</strong> W/A/S/D or Arrow Keys</li>
+                            <li><strong>Sprint:</strong> Hold SHIFT (limited stamina)</li>
+                            <li><strong>Freeze Powers:</strong> Press 1 (Red), 2 (Blue), 3 (Green), 4 (Orange)</li>
+                            <li><strong>Goal:</strong> Collect all pellets while avoiding dinosaurs</li>
+                        </ul>
+                    </div>
+
+                    <div class="player-instructions">
+                        <h3>Player 2 - Dinosaur Controller</h3>
+                        <ul>
+                            <li><strong>Movement:</strong> I/J/K/L keys</li>
+                            <li><strong>Switch Dinos:</strong> U (Raptor), O (Pterodactyl), P (Triceratops), [ (T-Rex)</li>
+                            <li><strong>Special Ability:</strong> SPACE (varies by dinosaur)</li>
+                            <li><strong>Cycle Dinos:</strong> TAB</li>
+                            <li><strong>Goal:</strong> Catch the safari explorer</li>
+                        </ul>
+                    </div>
+
+                    <div class="dinosaur-info">
+                        <h3>Dinosaur Abilities</h3>
+                        <div class="dino-grid">
+                            <div class="dino-card red">
+                                <h4>Raptor</h4>
+                                <p>Fast & agile. Ability: Pounce forward 3 tiles.</p>
+                            </div>
+                            <div class="dino-card blue">
+                                <h4>Pterodactyl</h4>
+                                <p>Scout with vision. Ability: Sonar reveals player.</p>
+                            </div>
+                            <div class="dino-card green">
+                                <h4>Triceratops</h4>
+                                <p>Slow tank. Ability: Stampede charge.</p>
+                            </div>
+                            <div class="dino-card orange">
+                                <h4>T-Rex</h4>
+                                <p>Boss dino. Ability: Roar impairs player.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="back-to-menu-btn" class="btn-primary">Back to Menu</button>
+                </div>
+            </div>
+
+            <div id="pause-overlay" class="overlay">
+                <div class="pause-content">
+                    <h2>Paused</h2>
+                    <div class="menu-buttons">
+                        <button id="resume-btn" class="btn-primary">Resume</button>
+                        <button id="restart-btn" class="btn-secondary">Restart Level</button>
+                        <button id="quit-btn" class="btn-secondary">Quit to Menu</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="level-complete-overlay" class="overlay">
+                <div class="level-complete-content">
+                    <h2>Level Complete!</h2>
+                    <div id="level-stats">
+                        <p>Time: <span id="time-stat">0:00</span></p>
+                        <p>Pellets: <span id="pellets-stat">0/0</span></p>
+                        <p>Bonus: <span id="bonus-stat">0</span></p>
+                    </div>
+                    <button id="next-level-btn" class="btn-primary">Next Level</button>
+                </div>
+            </div>
+
+            <div id="game-over-overlay" class="overlay">
+                <div class="game-over-content">
+                    <h2 id="winner-text">Game Over</h2>
+                    <div id="final-stats">
+                        <p>Final Score: <span id="final-score">0</span></p>
+                        <p>Levels Completed: <span id="levels-completed">0</span></p>
+                    </div>
+                    <div class="menu-buttons">
+                        <button id="play-again-btn" class="btn-primary">Play Again</button>
+                        <button id="menu-btn" class="btn-secondary">Main Menu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player HUD -->
+        <div id="player-hud">
+            <div class="hud-section">
+                <h3>Player 1 - Safari Explorer</h3>
+                <div class="stamina-bar">
+                    <div class="label">Stamina</div>
+                    <div class="bar-container">
+                        <div id="stamina-bar-fill" class="bar-fill"></div>
+                    </div>
+                </div>
+                <div class="powerup-inventory">
+                    <div class="label">Freeze Power-ups</div>
+                    <div class="powerup-grid">
+                        <div class="powerup-slot red">
+                            <span class="key">1</span>
+                            <span class="count" id="red-freeze-count">0</span>
+                        </div>
+                        <div class="powerup-slot blue">
+                            <span class="key">2</span>
+                            <span class="count" id="blue-freeze-count">0</span>
+                        </div>
+                        <div class="powerup-slot green">
+                            <span class="key">3</span>
+                            <span class="count" id="green-freeze-count">0</span>
+                        </div>
+                        <div class="powerup-slot orange">
+                            <span class="key">4</span>
+                            <span class="count" id="orange-freeze-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-section">
+                <h3>Player 2 - Dinosaur Pack</h3>
+                <div class="active-dinosaur">
+                    <div class="label">Active Dinosaur</div>
+                    <div id="active-dino-display" class="dino-display">Raptor</div>
+                </div>
+                <div class="dinosaur-status">
+                    <div class="dino-status-item" id="raptor-status">
+                        <span class="dino-name">Raptor [U]</span>
+                        <span class="dino-state">Ready</span>
+                    </div>
+                    <div class="dino-status-item" id="pterodactyl-status">
+                        <span class="dino-name">Pterodactyl [O]</span>
+                        <span class="dino-state">Ready</span>
+                    </div>
+                    <div class="dino-status-item" id="triceratops-status">
+                        <span class="dino-name">Triceratops [P]</span>
+                        <span class="dino-state">Ready</span>
+                    </div>
+                    <div class="dino-status-item" id="trex-status">
+                        <span class="dino-name">T-Rex [[]</span>
+                        <span class="dino-state">Ready</span>
+                    </div>
+                </div>
+                <div class="ability-cooldown">
+                    <div class="label">Special Ability</div>
+                    <div class="bar-container">
+                        <div id="ability-cooldown-fill" class="bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer id="game-footer">
+            <div class="footer-controls">
+                <button id="fullscreen-btn" class="btn-icon" title="Toggle Fullscreen">⛶</button>
+                <button id="mute-btn" class="btn-icon" title="Toggle Sound">🔊</button>
+                <button id="audio-settings-btn" class="btn-icon" title="Audio Settings">🎵</button>
+            </div>
+            <span class="controls-hint">Press ESC to pause | F11 for fullscreen</span>
+        </footer>
+
+        <!-- Audio Settings Panel -->
+        <div id="audio-settings-panel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h3>Audio Settings</h3>
+                <div class="volume-controls">
+                    <div class="volume-control">
+                        <label for="master-volume">
+                            <span>Master Volume</span>
+                            <span id="master-volume-value">70%</span>
+                        </label>
+                        <input type="range" id="master-volume" min="0" max="100" value="70">
+                    </div>
+                    <div class="volume-control">
+                        <label for="music-volume">
+                            <span>Music Volume</span>
+                            <span id="music-volume-value">50%</span>
+                        </label>
+                        <input type="range" id="music-volume" min="0" max="100" value="50">
+                    </div>
+                    <div class="volume-control">
+                        <label for="sfx-volume">
+                            <span>SFX Volume</span>
+                            <span id="sfx-volume-value">60%</span>
+                        </label>
+                        <input type="range" id="sfx-volume" min="0" max="100" value="60">
+                    </div>
+                </div>
+                <button id="close-audio-settings" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="js/constants.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/maze.js"></script>
+    <script src="js/powerups.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

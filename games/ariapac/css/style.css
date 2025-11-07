@@ -1,0 +1,710 @@
+/**
+ * AriaPac - Game Styles
+ * Jungle-themed styling for the game interface
+ */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a2e1a 0%, #0d1a0d 100%);
+    color: #ffffff;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+/* Header */
+#game-header {
+    background: linear-gradient(135deg, #2a4a2a 0%, #1a3a1a 100%);
+    border: 2px solid #3d5a3d;
+    border-radius: 10px 10px 0 0;
+    padding: 15px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#game-header h1 {
+    font-size: 32px;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+#game-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.info-section {
+    display: flex;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.info-section .label {
+    color: #aaaaaa;
+}
+
+.info-section span:last-child {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Game Container */
+#game-container {
+    position: relative;
+    flex: 1;
+    background: #000000;
+    border: 3px solid #3d5a3d;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Canvas Layers */
+#game-container canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+}
+
+#bg-layer {
+    z-index: 1;
+}
+
+#entity-layer {
+    z-index: 2;
+}
+
+#ui-layer {
+    z-index: 3;
+}
+
+/* Overlays */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.active {
+    display: flex;
+}
+
+.overlay > div {
+    background: linear-gradient(135deg, #2a4a2a 0%, #1a3a1a 100%);
+    border: 3px solid #3d5a3d;
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 600px;
+    width: 90%;
+}
+
+.overlay h2 {
+    color: #ffd700;
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.overlay .subtitle {
+    text-align: center;
+    color: #aaaaaa;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+/* Buttons */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-primary, .btn-secondary, .btn-icon {
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+    color: #1a2e1a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #3d5a3d 0%, #2a4a2a 100%);
+    color: #ffffff;
+    border: 2px solid #4a6a4a;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #4a6a4a 0%, #3d5a3d 100%);
+    border-color: #5a7a5a;
+}
+
+.btn-icon {
+    background: transparent;
+    color: #ffd700;
+    padding: 10px;
+    font-size: 24px;
+    border: 2px solid #3d5a3d;
+}
+
+.btn-icon:hover {
+    background: rgba(61, 90, 61, 0.3);
+    border-color: #ffd700;
+}
+
+/* Instructions */
+.instructions-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.player-instructions {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 4px solid #ffd700;
+    border-radius: 5px;
+}
+
+.player-instructions h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+.player-instructions ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.player-instructions li {
+    padding: 5px 0;
+    color: #cccccc;
+}
+
+.player-instructions strong {
+    color: #ffffff;
+}
+
+.dinosaur-info {
+    margin-top: 20px;
+}
+
+.dinosaur-info h3 {
+    color: #ffd700;
+    margin-bottom: 15px;
+}
+
+.dino-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.dino-card {
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.dino-card.red {
+    border-color: #dc143c;
+}
+
+.dino-card.blue {
+    border-color: #4169e1;
+}
+
+.dino-card.green {
+    border-color: #228b22;
+}
+
+.dino-card.orange {
+    border-color: #ff8c00;
+}
+
+.dino-card h4 {
+    margin-bottom: 8px;
+    color: #ffd700;
+}
+
+.dino-card p {
+    color: #cccccc;
+    font-size: 14px;
+}
+
+/* Player HUD */
+#player-hud {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #2a4a2a 0%, #1a3a1a 100%);
+    border: 2px solid #3d5a3d;
+    border-radius: 0 0 10px 10px;
+    border-top: none;
+}
+
+.hud-section {
+    flex: 1;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.hud-section h3 {
+    font-size: 16px;
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.hud-section .label {
+    font-size: 12px;
+    color: #aaaaaa;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Stamina Bar */
+.stamina-bar {
+    margin-bottom: 15px;
+}
+
+.bar-container {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid #3d5a3d;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.2s ease, background-color 0.3s ease;
+    border-radius: 8px;
+}
+
+#stamina-bar-fill {
+    background-color: #4CAF50;
+}
+
+/* Powerup Inventory */
+.powerup-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.powerup-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 5px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid;
+    border-radius: 8px;
+    position: relative;
+}
+
+.powerup-slot.red {
+    border-color: #dc143c;
+}
+
+.powerup-slot.blue {
+    border-color: #4169e1;
+}
+
+.powerup-slot.green {
+    border-color: #228b22;
+}
+
+.powerup-slot.orange {
+    border-color: #ff8c00;
+}
+
+.powerup-slot .key {
+    font-size: 12px;
+    color: #aaaaaa;
+    margin-bottom: 5px;
+}
+
+.powerup-slot .count {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* Active Dinosaur */
+.active-dinosaur {
+    margin-bottom: 15px;
+}
+
+.dino-display {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.dino-display.raptor {
+    color: #dc143c;
+}
+
+.dino-display.pterodactyl {
+    color: #4169e1;
+}
+
+.dino-display.triceratops {
+    color: #228b22;
+}
+
+.dino-display.trex {
+    color: #ff8c00;
+}
+
+/* Dinosaur Status */
+.dinosaur-status {
+    margin-bottom: 15px;
+}
+
+.dino-status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 3px solid #3d5a3d;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.dino-status-item.active {
+    background: rgba(255, 215, 0, 0.2);
+    border-left-color: #ffd700;
+}
+
+.dino-status-item .dino-name {
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.dino-status-item .dino-state {
+    font-size: 12px;
+    color: #aaaaaa;
+}
+
+/* Ability Cooldown */
+.ability-cooldown .bar-fill {
+    background-color: #4CAF50;
+}
+
+/* Footer */
+#game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #2a4a2a 0%, #1a3a1a 100%);
+    border: 2px solid #3d5a3d;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+}
+
+.controls-hint {
+    font-size: 12px;
+    color: #aaaaaa;
+    flex: 1;
+    text-align: center;
+}
+
+/* Level Stats */
+#level-stats, #final-stats {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+#level-stats p, #final-stats p {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#level-stats p:last-child, #final-stats p:last-child {
+    border-bottom: none;
+}
+
+#level-stats span, #final-stats span {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Scrollbar Styling */
+.instructions-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.instructions-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.instructions-content::-webkit-scrollbar-thumb {
+    background: #3d5a3d;
+    border-radius: 5px;
+}
+
+.instructions-content::-webkit-scrollbar-thumb:hover {
+    background: #4a6a4a;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #game-header h1 {
+        font-size: 24px;
+    }
+
+    #game-info {
+        font-size: 14px;
+    }
+
+    #player-hud {
+        flex-direction: column;
+    }
+
+    .powerup-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .dino-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overlay > div {
+        padding: 20px;
+    }
+
+    .overlay h2 {
+        font-size: 28px;
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.btn-primary:active {
+    animation: pulse 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.overlay.active > div {
+    animation: fadeIn 0.4s ease;
+}
+
+/* Loading State */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.loading::after {
+    content: "Loading...";
+    font-size: 24px;
+    color: #ffd700;
+    animation: pulse 1.5s infinite;
+}
+
+/* Audio Settings Panel */
+.settings-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #2a4a2a 0%, #1a3a1a 100%);
+    border: 2px solid #3d5a3d;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    min-width: 300px;
+    transition: all 0.3s ease;
+}
+
+.settings-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+.settings-content h3 {
+    color: #ffd700;
+    margin-bottom: 20px;
+    font-size: 20px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.volume-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.volume-control {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.volume-control label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.volume-control label span:first-child {
+    font-weight: bold;
+}
+
+.volume-control label span:last-child {
+    color: #ffd700;
+    font-size: 12px;
+}
+
+.volume-control input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #3d5a3d 0%, #5a7a5a 100%);
+    outline: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
+.volume-control input[type="range"]:hover {
+    opacity: 1;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffd700;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.volume-control input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffd700;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb:hover {
+    background: #ffed4e;
+    transform: scale(1.1);
+}
+
+.volume-control input[type="range"]::-moz-range-thumb:hover {
+    background: #ffed4e;
+    transform: scale(1.1);
+}
+
+/* Footer Controls Layout */
+.footer-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
