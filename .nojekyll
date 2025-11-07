@@ -1,3 +1,2 @@
-# This file tells GitHub Pages to not use Jekyll
-# This allows us to serve static HTML files directly
-
+# This file tells GitHub Pages not to use Jekyll
+# Required for serving files that start with underscores and other Jekyll-ignored files
