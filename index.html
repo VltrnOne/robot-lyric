@@ -909,7 +909,9 @@
                 this.jumpForce = -10; // Slightly reduced for robot
                 this.baseObstacleSpeed = 2; // Slower starting speed
                 this.rocketSpeedMultiplier = 0.3; // Speed reduction during rocket mode
-                this.obstacleGap = 200;
+                // Responsive obstacle gap - larger on mobile for easier navigation
+                const isMobile = window.innerWidth <= 768 || window.screen.width <= 768;
+                this.obstacleGap = isMobile ? 250 : 200; // Larger gap on mobile
                 this.obstacleWidth = 60;
 
                 this.gameState = 'nameInput'; // nameInput, waiting, playing, gameOver
