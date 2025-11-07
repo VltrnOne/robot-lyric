@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VLT Games - Micro Games Portal</title>
+    <title>VLTRN GAMES - Game Portal</title>
     <style>
         * {
             margin: 0;
@@ -13,73 +13,144 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .game-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow-x: hidden;
             position: relative;
         }
 
-        .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        /* Full Background Splash */
+        .splash-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: 1;
         }
 
-        .game-card-header {
-            padding: 15px 20px;
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .splash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        .splash-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .splash-content h1 {
+            font-size: 8em;
+            font-weight: bold;
+            text-shadow: 4px 4px 20px rgba(0,0,0,0.5), 0 0 40px rgba(255,255,255,0.3);
+            margin-bottom: 20px;
+            letter-spacing: 10px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        .splash-content p {
+            font-size: 2em;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            opacity: 0.9;
+        }
+
+        /* Game Container */
+        .game-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 600px;
+            height: 450px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-container.expanded {
+            top: 50px;
+            left: 50px;
+            right: 50px;
+            bottom: 50px;
+            width: auto;
+            height: auto;
+        }
+
+        .game-container.minimized {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .game-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
-        .game-card-header h3 {
-            font-size: 1.3em;
+        .game-header h2 {
+            font-size: 1.5em;
             margin: 0;
         }
 
-        .game-card-header .by-line {
-            font-size: 0.8em;
-            opacity: 0.9;
+        .game-header-controls {
+            display: flex;
+            gap: 10px;
         }
 
-        .game-preview {
+        .game-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .game-iframe-wrapper {
+            flex: 1;
             position: relative;
-            width: 100%;
-            height: 300px;
             background: #1a1a1a;
             overflow: hidden;
         }
@@ -88,134 +159,10 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none;
-            transform: scale(0.5);
-            transform-origin: top left;
-            width: 200%;
-            height: 200%;
+            pointer-events: auto;
         }
 
-        .game-actions {
-            padding: 15px 20px;
-            display: flex;
-            gap: 10px;
-            background: #f5f5f5;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        .btn-play {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-play:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-fullscreen {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .btn-fullscreen:hover {
-            background: #27ae60;
-            transform: scale(1.05);
-        }
-
-        /* Fullscreen Modal */
-        .fullscreen-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 10000;
-            padding: 20px;
-        }
-
-        .fullscreen-modal.active {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .fullscreen-header {
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            margin-bottom: 20px;
-            padding: 0 20px;
-        }
-
-        .fullscreen-header h2 {
-            font-size: 2em;
-        }
-
-        .fullscreen-close {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-close:hover {
-            background: #c0392b;
-            transform: scale(1.05);
-        }
-
-        .fullscreen-iframe-container {
-            width: 100%;
-            max-width: 1200px;
-            height: calc(100vh - 120px);
-            background: #1a1a1a;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(255,255,255,0.1);
-        }
-
-        .fullscreen-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .fullscreen-header h2 {
-                font-size: 1.5em;
-            }
-        }
-
-        .loading {
+        .game-loading {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -223,180 +170,138 @@
             color: white;
             font-size: 1.2em;
         }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .splash-content h1 {
+                font-size: 4em;
+                letter-spacing: 5px;
+            }
+
+            .splash-content p {
+                font-size: 1.2em;
+            }
+
+            .game-container {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                height: 400px;
+            }
+
+            .game-container.expanded {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎮 VLT Games</h1>
-        <p>Micro Games Portal - Play instantly or expand to fullscreen</p>
+    <!-- Full Background Splash -->
+    <div class="splash-background"></div>
+    <div class="splash-overlay"></div>
+    <div class="splash-content">
+        <h1>VLTRN GAMES</h1>
+        <p>Premium Gaming Experience</p>
     </div>
 
-    <div class="games-grid" id="gamesGrid">
-        <!-- Games will be dynamically added here -->
-    </div>
-
-    <!-- Fullscreen Modal -->
-    <div class="fullscreen-modal" id="fullscreenModal">
-        <div class="fullscreen-header">
-            <h2 id="fullscreenTitle">Game Title</h2>
-            <button class="fullscreen-close" onclick="closeFullscreen()">✕ Close</button>
+    <!-- Game Container -->
+    <div class="game-container" id="gameContainer">
+        <div class="game-header">
+            <h2>🤖 ROBOT LYRIC <span style="font-size: 0.7em; opacity: 0.9;">by Lyric and Aria</span></h2>
+            <div class="game-header-controls">
+                <button class="game-btn" id="expandBtn" onclick="toggleExpand()">⛶ Expand</button>
+                <button class="game-btn" id="minimizeBtn" onclick="toggleMinimize()" style="display: none;">⊟ Minimize</button>
+            </div>
         </div>
-        <div class="fullscreen-iframe-container">
-            <iframe id="fullscreenIframe" class="fullscreen-iframe" src=""></iframe>
+        <div class="game-iframe-wrapper">
+            <div class="game-loading" id="gameLoading">Loading game...</div>
+            <iframe 
+                id="gameIframe" 
+                class="game-iframe" 
+                src="index.html"
+                onload="document.getElementById('gameLoading').style.display='none'"
+            ></iframe>
         </div>
     </div>
 
     <script>
-        // Game database
-        const games = [
-            {
-                id: 'robot-lyric',
-                title: '🤖 ROBOT LYRIC',
-                by: 'by Lyric and Aria',
-                url: 'index.html',
-                description: 'A fast-paced, retro-style game featuring a robot navigating through obstacles'
+        let isExpanded = false;
+        let isMinimized = false;
+
+        function toggleExpand() {
+            const container = document.getElementById('gameContainer');
+            const expandBtn = document.getElementById('expandBtn');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            
+            if (isExpanded) {
+                // Minimize to original size
+                container.classList.remove('expanded');
+                expandBtn.style.display = 'block';
+                minimizeBtn.style.display = 'none';
+                isExpanded = false;
+            } else {
+                // Expand to full page
+                container.classList.add('expanded');
+                expandBtn.style.display = 'none';
+                minimizeBtn.style.display = 'block';
+                isExpanded = true;
             }
-            // Add more games here as they're created
-        ];
-
-        // Initialize games
-        function initGames() {
-            const gamesGrid = document.getElementById('gamesGrid');
-            
-            games.forEach(game => {
-                const gameCard = createGameCard(game);
-                gamesGrid.appendChild(gameCard);
-            });
         }
 
-        // Create game card
-        function createGameCard(game) {
-            const card = document.createElement('div');
-            card.className = 'game-card';
+        function toggleMinimize() {
+            const container = document.getElementById('gameContainer');
+            const expandBtn = document.getElementById('expandBtn');
+            const minimizeBtn = document.getElementById('minimizeBtn');
             
-            card.innerHTML = `
-                <div class="game-card-header">
-                    <div>
-                        <h3>${game.title}</h3>
-                        <div class="by-line">${game.by || ''}</div>
-                    </div>
-                </div>
-                <div class="game-preview">
-                    <div class="loading">Loading preview...</div>
-                    <iframe 
-                        class="game-iframe" 
-                        src="${game.url}" 
-                        loading="lazy"
-                        onload="this.parentElement.querySelector('.loading').style.display='none'"
-                    ></iframe>
-                </div>
-                <div class="game-actions">
-                    <button class="btn btn-play" onclick="playGame('${game.id}')">
-                        ▶ Play
-                    </button>
-                    <button class="btn btn-fullscreen" onclick="openFullscreen('${game.id}')">
-                        ⛶ Fullscreen
-                    </button>
-                </div>
-            `;
-            
-            return card;
-        }
-
-        // Play game (inline)
-        function playGame(gameId) {
-            const game = games.find(g => g.id === gameId);
-            if (!game) return;
-            
-            // Find the card and enable pointer events on iframe
-            const cards = document.querySelectorAll('.game-card');
-            cards.forEach(card => {
-                const iframe = card.querySelector('.game-iframe');
-                const header = card.querySelector('.game-card-header h3');
-                if (header && header.textContent.includes(game.title)) {
-                    iframe.style.pointerEvents = 'auto';
-                    iframe.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Focus the iframe
-                    setTimeout(() => {
-                        iframe.contentWindow.focus();
-                    }, 100);
-                } else {
-                    iframe.style.pointerEvents = 'none';
-                }
-            });
-        }
-
-        // Open fullscreen
-        function openFullscreen(gameId) {
-            const game = games.find(g => g.id === gameId);
-            if (!game) return;
-            
-            const modal = document.getElementById('fullscreenModal');
-            const iframe = document.getElementById('fullscreenIframe');
-            const title = document.getElementById('fullscreenTitle');
-            
-            title.textContent = game.title;
-            iframe.src = game.url;
-            modal.classList.add('active');
-            
-            // Disable body scroll
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Close fullscreen
-        function closeFullscreen() {
-            const modal = document.getElementById('fullscreenModal');
-            const iframe = document.getElementById('fullscreenIframe');
-            
-            modal.classList.remove('active');
-            iframe.src = '';
-            
-            // Re-enable body scroll
-            document.body.style.overflow = 'auto';
-            
-            // Disable pointer events on all preview iframes
-            document.querySelectorAll('.game-iframe').forEach(iframe => {
-                iframe.style.pointerEvents = 'none';
-            });
-        }
-
-        // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeFullscreen();
+            if (isMinimized) {
+                // Show game
+                container.classList.remove('minimized');
+                isMinimized = false;
+            } else {
+                // Hide game
+                container.classList.add('minimized');
+                isMinimized = true;
+                
+                // Auto-show after 3 seconds or allow manual show
+                setTimeout(() => {
+                    if (isMinimized) {
+                        container.classList.remove('minimized');
+                        isMinimized = false;
+                    }
+                }, 3000);
             }
-        });
+        }
 
-        // Click outside modal to close
-        document.getElementById('fullscreenModal').addEventListener('click', (e) => {
-            if (e.target.id === 'fullscreenModal') {
-                closeFullscreen();
-            }
-        });
-
-        // Listen for messages from iframes
+        // Listen for messages from iframe
         window.addEventListener('message', (event) => {
             // Verify origin for security (adjust as needed)
             // if (event.origin !== 'https://yourdomain.com') return;
             
             if (event.data && event.data.type === 'request-fullscreen') {
-                // Find the game and open it in fullscreen
-                const game = games.find(g => g.id === event.data.game);
-                if (game) {
-                    openFullscreen(game.id);
+                // Expand the game container
+                if (!isExpanded) {
+                    toggleExpand();
                 }
             } else if (event.data && event.data.type === 'game-ready') {
-                // Game is ready, can enable interactions
+                // Game is ready
                 console.log(`Game ${event.data.game} is ready`);
             }
         });
 
-        // Initialize on load
-        window.addEventListener('load', () => {
-            initGames();
+        // Focus iframe when clicked
+        document.getElementById('gameIframe').addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    document.getElementById('gameIframe').contentWindow.focus();
+                } catch (e) {
+                    console.log('Could not focus iframe');
+                }
+            }, 500);
         });
     </script>
 </body>
 </html>
-
