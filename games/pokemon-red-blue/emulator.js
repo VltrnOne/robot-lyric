@@ -80,36 +80,40 @@ function detectMobile() {
 }
 
 function loadEmulatorJS() {
-    // Check if already loaded
-    if (window.EJS_player) {
-        emulatorLoaded = true;
-        loadGame('pokered.gbc');
-        return;
-    }
-    
     // Show loading message
     const loading = document.querySelector('.loading');
     if (loading) {
         loading.textContent = 'Loading EmulatorJS...';
     }
     
+    // Configure EmulatorJS BEFORE loading the script
+    // The loader reads these values when it loads
+    window.EJS_player = '#emulatorjs-container';
+    window.EJS_core = 'gb'; // Game Boy core
+    window.EJS_gameUrl = 'pokered/pokered.gbc'; // Default to Red
+    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+    window.EJS_color = '#667eea';
+    window.EJS_startOnLoaded = true;
+    window.EJS_fullscreenOnLoaded = false;
+    window.EJS_gameName = 'Pokemon Red';
+    
     // Load EmulatorJS script from CDN
-    // This works on production sites and loads from a reliable CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
     script.crossOrigin = 'anonymous';
     script.onload = () => {
         emulatorLoaded = true;
         console.log('EmulatorJS loaded successfully');
-        // Wait a bit for EmulatorJS to fully initialize
+        // Wait for EmulatorJS to fully initialize
         setTimeout(() => {
-            loadGame('pokered.gbc');
-        }, 500);
+            if (loading) {
+                loading.style.display = 'none';
+            }
+        }, 1000);
     };
     script.onerror = () => {
         console.error('Failed to load EmulatorJS from CDN');
-        // Try alternative CDN or show helpful error
-        showError('Failed to load emulator library. Please check your internet connection and try again. If the problem persists, the CDN may be temporarily unavailable.');
+        showError('Failed to load emulator library. Please check your internet connection and try again.');
     };
     document.head.appendChild(script);
 }
@@ -152,82 +156,39 @@ function loadGame(romFile) {
         container.innerHTML = ''; // Clear previous content
     }
     
-    // Configure EmulatorJS for production
-    window.EJS_player = '#emulatorjs-container';
-    window.EJS_core = 'gb'; // Game Boy core (supports .gb and .gbc)
+    // Update EmulatorJS configuration for the new ROM
+    window.EJS_gameUrl = `pokered/${romFile}`;
+    window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
     
-    // Use relative path for ROM - works on live website
-    // Path is relative to the game's index.html location
-    const romPath = `pokered/${romFile}`;
-    window.EJS_gameUrl = romPath;
+    // Reload the emulator with new ROM
+    // Remove old script and reload
+    const oldScript = document.querySelector('script[src*="loader.js"]');
+    if (oldScript) {
+        oldScript.remove();
+    }
+    
+    // Reconfigure and reload
+    window.EJS_player = '#emulatorjs-container';
+    window.EJS_core = 'gb';
     window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     window.EJS_color = '#667eea';
     window.EJS_startOnLoaded = true;
     window.EJS_fullscreenOnLoaded = false;
-    window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
     
-    // Production settings for better compatibility
-    window.EJS_defaultControls = {
-        UP: 'ArrowUp',
-        DOWN: 'ArrowDown',
-        LEFT: 'ArrowLeft',
-        RIGHT: 'ArrowRight',
-        A: 'KeyZ',
-        B: 'KeyX',
-        START: 'Enter',
-        SELECT: 'ShiftLeft'
+    // Load the script again with new configuration
+    const script = document.createElement('script');
+    script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+        console.log('Game loaded:', romFile);
+        setTimeout(() => {
+            if (loading) loading.style.display = 'none';
+        }, 1000);
     };
-    
-    // Ensure CORS is handled properly for production
-    window.EJS_gameType = 'gb';
-    
-    // Set up default controls
-    window.EJS_controls = {
-        UP: 'ArrowUp',
-        DOWN: 'ArrowDown',
-        LEFT: 'ArrowLeft',
-        RIGHT: 'ArrowRight',
-        A: 'KeyZ',
-        B: 'KeyX',
-        START: 'Enter',
-        SELECT: 'ShiftLeft'
+    script.onerror = () => {
+        showError('Failed to load game. Please try again.');
     };
-    
-    // Start the game
-    try {
-        // Check if EJS_startGame exists
-        if (typeof window.EJS_startGame === 'function') {
-            window.EJS_startGame();
-            gameStarted = true;
-            console.log('Game started:', romFile);
-            // Hide loading after a short delay
-            setTimeout(() => {
-                if (loading) loading.style.display = 'none';
-            }, 1000);
-        } else {
-            // If EJS_startGame doesn't exist, wait a bit more or reload
-            console.log('EJS_startGame not found, waiting for initialization...');
-            let attempts = 0;
-            const maxAttempts = 10;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (typeof window.EJS_startGame === 'function') {
-                    clearInterval(checkInterval);
-                    window.EJS_startGame();
-                    gameStarted = true;
-                    console.log('Game started after wait:', romFile);
-                    if (loading) loading.style.display = 'none';
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkInterval);
-                    console.error('EJS_startGame not available after waiting');
-                    showError('Failed to initialize emulator. The EmulatorJS library may not have loaded correctly. Please refresh the page.');
-                }
-            }, 200);
-        }
-    } catch (e) {
-        console.error('Error starting game:', e);
-        showError('Failed to start game: ' + e.message + '. Please check the browser console for more details.');
-    }
+    document.head.appendChild(script);
 }
 
 function showError(message) {
