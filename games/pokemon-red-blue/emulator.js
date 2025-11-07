@@ -186,11 +186,11 @@ function loadGame(romFile) {
         loading.style.display = 'block';
     }
     
-    // Get absolute URL for ROM file
-    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const romUrl = `${baseUrl}/pokered/${romFile}`;
+    // Use relative path for ROM file - works better in production
+    const romUrl = `pokered/${romFile}`;
     
     console.log('Loading ROM from:', romUrl);
+    console.log('Current location:', window.location.href);
     
     // Clear container
     if (container) {
