@@ -1,0 +1,40 @@
+{
+  "name": "Robot Lyric - Flying Robot Game",
+  "short_name": "Robot Lyric",
+  "description": "Fly through obstacles, collect coins, and master the skies in this exciting robot flying game!",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "background_color": "#87CEEB",
+  "theme_color": "#87CEEB",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "robot-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "robot-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false
+}
