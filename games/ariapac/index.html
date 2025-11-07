@@ -35,6 +35,34 @@
             </div>
         </header>
 
+        <!-- Player HUD (Mobile: Above Canvas) -->
+        <div id="player-hud">
+            <div class="hud-section p1-hud" data-player="1">
+                <div class="hud-compact">
+                    <span class="hud-title">P1</span>
+                    <div class="stamina-bar-mini">
+                        <div id="stamina-bar-fill" class="bar-fill"></div>
+                    </div>
+                    <div class="powerup-inventory-mini">
+                        <span class="powerup-count red" id="red-freeze-count">0</span>
+                        <span class="powerup-count blue" id="blue-freeze-count">0</span>
+                        <span class="powerup-count green" id="green-freeze-count">0</span>
+                        <span class="powerup-count orange" id="orange-freeze-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-section p2-hud" data-player="2">
+                <div class="hud-compact">
+                    <span class="hud-title">P2</span>
+                    <div id="active-dino-display" class="dino-display-mini">Raptor</div>
+                    <div class="ability-cooldown-mini">
+                        <div id="ability-cooldown-fill" class="bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Game Container -->
         <div id="game-container">
             <!-- Canvas Layers -->
@@ -47,6 +75,22 @@
                 <div class="menu-content">
                     <h2>AriaPac</h2>
                     <p class="subtitle">Safari Explorer vs Dinosaurs</p>
+
+                    <!-- Player Selection (Mobile Only) -->
+                    <div id="player-selection" class="player-selection hidden">
+                        <p class="selection-prompt">Choose Your Player:</p>
+                        <div class="player-select-buttons">
+                            <button id="select-p1-btn" class="btn-player p1">
+                                <span class="player-icon">🧭</span>
+                                <span class="player-name">Safari Explorer</span>
+                            </button>
+                            <button id="select-p2-btn" class="btn-player p2">
+                                <span class="player-icon">🦖</span>
+                                <span class="player-name">Dinosaur Pack</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="menu-buttons">
                         <button id="start-game-btn" class="btn-primary">Start Game</button>
                         <button id="instructions-btn" class="btn-secondary">Instructions</button>
@@ -144,120 +188,46 @@
             </div>
         </div>
 
-        <!-- Player HUD -->
-        <div id="player-hud">
-            <div class="hud-section">
-                <h3>Player 1 - Safari Explorer</h3>
-                <div class="stamina-bar">
-                    <div class="label">Stamina</div>
-                    <div class="bar-container">
-                        <div id="stamina-bar-fill" class="bar-fill"></div>
-                    </div>
-                </div>
-                <div class="powerup-inventory">
-                    <div class="label">Freeze Power-ups</div>
-                    <div class="powerup-grid">
-                        <div class="powerup-slot red">
-                            <span class="key">1</span>
-                            <span class="count" id="red-freeze-count">0</span>
-                        </div>
-                        <div class="powerup-slot blue">
-                            <span class="key">2</span>
-                            <span class="count" id="blue-freeze-count">0</span>
-                        </div>
-                        <div class="powerup-slot green">
-                            <span class="key">3</span>
-                            <span class="count" id="green-freeze-count">0</span>
-                        </div>
-                        <div class="powerup-slot orange">
-                            <span class="key">4</span>
-                            <span class="count" id="orange-freeze-count">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="hud-section">
-                <h3>Player 2 - Dinosaur Pack</h3>
-                <div class="active-dinosaur">
-                    <div class="label">Active Dinosaur</div>
-                    <div id="active-dino-display" class="dino-display">Raptor</div>
-                </div>
-                <div class="dinosaur-status">
-                    <div class="dino-status-item" id="raptor-status">
-                        <span class="dino-name">Raptor [U]</span>
-                        <span class="dino-state">Ready</span>
-                    </div>
-                    <div class="dino-status-item" id="pterodactyl-status">
-                        <span class="dino-name">Pterodactyl [O]</span>
-                        <span class="dino-state">Ready</span>
-                    </div>
-                    <div class="dino-status-item" id="triceratops-status">
-                        <span class="dino-name">Triceratops [P]</span>
-                        <span class="dino-state">Ready</span>
-                    </div>
-                    <div class="dino-status-item" id="trex-status">
-                        <span class="dino-name">T-Rex [[]</span>
-                        <span class="dino-state">Ready</span>
-                    </div>
-                </div>
-                <div class="ability-cooldown">
-                    <div class="label">Special Ability</div>
-                    <div class="bar-container">
-                        <div id="ability-cooldown-fill" class="bar-fill"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Mobile Touch Controls -->
         <div id="mobile-controls" class="mobile-controls hidden">
-            <!-- Left side - Player 1 Movement -->
-            <div class="mobile-control-section left">
-                <div class="d-pad">
-                    <button class="d-pad-btn up" data-key="w" data-player="1" data-action="up">↑</button>
-                    <button class="d-pad-btn left" data-key="a" data-player="1" data-action="left">←</button>
-                    <button class="d-pad-btn center"></button>
-                    <button class="d-pad-btn right" data-key="d" data-player="1" data-action="right">→</button>
-                    <button class="d-pad-btn down" data-key="s" data-player="1" data-action="down">↓</button>
+            <!-- Left side - Action Buttons -->
+            <div class="mobile-actions">
+                <!-- Player 1 Actions -->
+                <div class="p1-actions player-controls" data-player="1">
+                    <button class="action-btn sprint-btn" data-key="Shift" data-player="1">
+                        <span class="btn-icon">⚡</span>
+                        <span class="btn-label">Sprint</span>
+                    </button>
+                    <div class="freeze-buttons">
+                        <button class="freeze-btn small red" data-key="1" data-player="1">1</button>
+                        <button class="freeze-btn small blue" data-key="2" data-player="1">2</button>
+                        <button class="freeze-btn small green" data-key="3" data-player="1">3</button>
+                        <button class="freeze-btn small orange" data-key="4" data-player="1">4</button>
+                    </div>
                 </div>
-                <div class="control-label">P1 Move</div>
+
+                <!-- Player 2 Actions -->
+                <div class="p2-actions player-controls" data-player="2">
+                    <button class="action-btn ability-btn" data-key=" " data-player="2">
+                        <span class="btn-icon">✨</span>
+                        <span class="btn-label">Ability</span>
+                    </button>
+                    <div class="dino-buttons">
+                        <button class="dino-btn small raptor" data-key="u" data-player="2">U</button>
+                        <button class="dino-btn small ptero" data-key="o" data-player="2">O</button>
+                        <button class="dino-btn small trike" data-key="p" data-player="2">P</button>
+                        <button class="dino-btn small trex" data-key="[" data-player="2">[</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Center - Player 1 Actions -->
-            <div class="mobile-control-section center-left">
-                <button class="action-btn sprint" data-key="Shift" data-player="1">Sprint</button>
-                <div class="freeze-grid">
-                    <button class="freeze-btn red" data-key="1" data-player="1">F1</button>
-                    <button class="freeze-btn blue" data-key="2" data-player="1">F2</button>
-                    <button class="freeze-btn green" data-key="3" data-player="1">F3</button>
-                    <button class="freeze-btn orange" data-key="4" data-player="1">F4</button>
+            <!-- Right side - Virtual Joystick -->
+            <div class="mobile-joystick">
+                <div id="joystick-container" class="joystick-container">
+                    <div id="joystick-base" class="joystick-base">
+                        <div id="joystick-stick" class="joystick-stick"></div>
+                    </div>
                 </div>
-                <div class="control-label">P1 Powers</div>
-            </div>
-
-            <!-- Center - Player 2 Actions -->
-            <div class="mobile-control-section center-right">
-                <button class="action-btn ability" data-key=" " data-player="2">Ability</button>
-                <div class="dino-grid">
-                    <button class="dino-btn raptor" data-key="u" data-player="2">Raptor</button>
-                    <button class="dino-btn ptero" data-key="o" data-player="2">Ptero</button>
-                    <button class="dino-btn trike" data-key="p" data-player="2">Trike</button>
-                    <button class="dino-btn trex" data-key="[" data-player="2">T-Rex</button>
-                </div>
-                <div class="control-label">P2 Dinos</div>
-            </div>
-
-            <!-- Right side - Player 2 Movement -->
-            <div class="mobile-control-section right">
-                <div class="d-pad">
-                    <button class="d-pad-btn up" data-key="i" data-player="2" data-action="up">↑</button>
-                    <button class="d-pad-btn left" data-key="j" data-player="2" data-action="left">←</button>
-                    <button class="d-pad-btn center"></button>
-                    <button class="d-pad-btn right" data-key="l" data-player="2" data-action="right">→</button>
-                    <button class="d-pad-btn down" data-key="k" data-player="2" data-action="down">↓</button>
-                </div>
-                <div class="control-label">P2 Move</div>
             </div>
 
             <!-- Pause Button -->
