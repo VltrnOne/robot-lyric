@@ -1,4 +1,4 @@
-// Game Boy Emulator Integration using GameBoy.js (trekawek)
+// Game Boy Emulator Integration using @neil-morrison44/gameboy-emulator
 let gameboy = null;
 let currentROM = null;
 let canvas = null;
@@ -33,19 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKeyboardControls();
     detectMobile();
     
-    // Wait for GameBoy.js to load
-    waitForGameBoy(() => {
+    // Wait for Game Boy emulator library to load
+    waitForEmulator(() => {
         initializeEmulator();
     });
 });
 
-function waitForGameBoy(callback, attempts = 0) {
-    if (typeof GameBoy !== 'undefined') {
+function waitForEmulator(callback, attempts = 0) {
+    // Check for various possible global names
+    if (typeof GameBoyEmulator !== 'undefined' || 
+        typeof GameBoy !== 'undefined' || 
+        typeof GameboyEmulator !== 'undefined' ||
+        (window.GameBoyEmulator) ||
+        (window.GameBoy) ||
+        (window.GameboyEmulator)) {
         callback();
-    } else if (attempts < 20) {
-        setTimeout(() => waitForGameBoy(callback, attempts + 1), 100);
+    } else if (attempts < 30) {
+        setTimeout(() => waitForEmulator(callback, attempts + 1), 100);
     } else {
-        showError('GameBoy.js library failed to load. Please check your internet connection and refresh the page.');
+        showError('Game Boy emulator library failed to load. Please check your internet connection and refresh the page.');
     }
 }
 
@@ -146,6 +152,7 @@ function loadGame(romFile) {
         try {
             if (gameboy.stop) gameboy.stop();
             if (gameboy.pause) gameboy.pause();
+            if (gameboy.destroy) gameboy.destroy();
         } catch (e) {
             console.log('Error stopping previous emulator:', e);
         }
@@ -169,20 +176,43 @@ function loadGame(romFile) {
             console.log('ROM loaded:', romFile, 'Size:', romBuffer.byteLength);
             romData = new Uint8Array(romBuffer);
             
-            // Initialize GameBoy.js emulator
-            if (typeof GameBoy !== 'undefined') {
+            // Try to initialize emulator with different possible APIs
+            const EmulatorClass = window.GameBoyEmulator || window.GameBoy || window.GameboyEmulator || GameBoyEmulator || GameBoy || GameboyEmulator;
+            
+            if (EmulatorClass) {
                 try {
-                    // GameBoy.js (trekawek) API
-                    gameboy = new GameBoy();
-                    
-                    // Load ROM
-                    gameboy.loadROM(romData);
-                    
-                    // Set canvas
-                    gameboy.setCanvas(canvas);
+                    // Try different initialization patterns
+                    if (typeof EmulatorClass === 'function') {
+                        // Constructor pattern
+                        gameboy = new EmulatorClass({
+                            canvas: canvas,
+                            rom: romData
+                        });
+                    } else if (EmulatorClass.create) {
+                        // Factory pattern
+                        gameboy = EmulatorClass.create({
+                            canvas: canvas,
+                            rom: romData
+                        });
+                    } else {
+                        // Try direct initialization
+                        gameboy = new EmulatorClass();
+                        if (gameboy.loadROM) {
+                            gameboy.loadROM(romData);
+                        }
+                        if (gameboy.setCanvas) {
+                            gameboy.setCanvas(canvas);
+                        }
+                    }
                     
                     // Start emulation
-                    gameboy.start();
+                    if (gameboy.start) {
+                        gameboy.start();
+                    } else if (gameboy.play) {
+                        gameboy.play();
+                    } else if (gameboy.run) {
+                        gameboy.run();
+                    }
                     
                     // Start emulation loop
                     startEmulation();
@@ -192,12 +222,15 @@ function loadGame(romFile) {
                     }
                     
                     console.log('Game started:', romFile);
+                    console.log('Emulator instance:', gameboy);
                 } catch (e) {
-                    console.error('Error initializing GameBoy.js:', e);
+                    console.error('Error initializing emulator:', e);
+                    console.log('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('game')));
                     showError('Failed to initialize emulator: ' + e.message + '. Please check the browser console for details.');
                 }
             } else {
-                showError('GameBoy.js library not loaded. Please refresh the page.');
+                console.log('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('game')));
+                showError('Game Boy emulator library not loaded. Please refresh the page.');
             }
         })
         .catch(error => {
@@ -212,15 +245,21 @@ function startEmulation() {
     function emulationLoop() {
         if (gameboy) {
             try {
-                // GameBoy.js handles the emulation loop internally
-                // We just need to make sure it's running
-                if (gameboy.isRunning && !gameboy.isRunning()) {
-                    gameboy.start();
-                }
-                
                 // Update frame if needed
                 if (gameboy.updateFrame) {
                     gameboy.updateFrame();
+                } else if (gameboy.step) {
+                    // Run multiple steps per frame for 60fps
+                    for (let i = 0; i < 10000; i++) {
+                        gameboy.step();
+                    }
+                } else if (gameboy.runFrame) {
+                    gameboy.runFrame();
+                }
+                
+                // Draw frame to canvas if needed
+                if (gameboy.render && !gameboy.autoRender) {
+                    gameboy.render(ctx);
                 }
             } catch (e) {
                 console.error('Emulation error:', e);
@@ -328,6 +367,8 @@ function pressKey(keyName) {
                 gameboy.keyDown(keyName);
             } else if (gameboy.pressKey) {
                 gameboy.pressKey(keyName);
+            } else if (gameboy.pressButton) {
+                gameboy.pressButton(keyName);
             }
         } catch (e) {
             console.log('Error setting key:', e);
@@ -344,6 +385,8 @@ function releaseKey(keyName) {
                 gameboy.keyUp(keyName);
             } else if (gameboy.releaseKey) {
                 gameboy.releaseKey(keyName);
+            } else if (gameboy.releaseButton) {
+                gameboy.releaseButton(keyName);
             }
         } catch (e) {
             console.log('Error releasing key:', e);
