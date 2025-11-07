@@ -240,6 +240,27 @@ class Renderer {
         const ctx = this.entityCtx;
         const config = DINOSAUR_CONFIG[dinosaur.type];
 
+        // Caged effect - draw with reduced opacity at spawn
+        if (dinosaur.isInCage) {
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = config.color;
+            ctx.beginPath();
+            ctx.arc(dinosaur.x + dinosaur.size / 2, dinosaur.y + dinosaur.size / 2, dinosaur.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cage bars effect
+            ctx.strokeStyle = '#888888';
+            ctx.lineWidth = 2;
+            for (let i = -10; i <= 10; i += 4) {
+                ctx.beginPath();
+                ctx.moveTo(dinosaur.x + dinosaur.size / 2 + i, dinosaur.y);
+                ctx.lineTo(dinosaur.x + dinosaur.size / 2 + i, dinosaur.y + dinosaur.size);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+            return; // Don't render normal features for caged dinos
+        }
+
         // Frozen effect
         if (dinosaur.isFrozen) {
             ctx.fillStyle = COLORS.FREEZE;

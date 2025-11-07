@@ -8,6 +8,9 @@ class Dinosaur {
         this.type = type;
         this.config = DINOSAUR_CONFIG[type];
 
+        this.spawnX = x; // Store original spawn position
+        this.spawnY = y;
+
         this.x = x - this.config.size / 2;
         this.y = y - this.config.size / 2;
         this.size = this.config.size;
@@ -21,6 +24,8 @@ class Dinosaur {
         this.isActive = false; // Player-controlled
         this.isFrozen = false;
         this.freezeTimer = 0;
+        this.isInCage = false; // In cage after being caught
+        this.cageTimer = 0;
 
         this.abilityActive = false;
         this.abilityCooldownTimer = 0;
@@ -43,6 +48,15 @@ class Dinosaur {
     }
 
     update(deltaTime, input, player, maze, otherDinosaurs) {
+        // Update cage state (respawn timer)
+        if (this.isInCage) {
+            this.cageTimer -= deltaTime;
+            if (this.cageTimer <= 0) {
+                this.respawnFromCage();
+            }
+            return; // Cannot do anything while in cage
+        }
+
         // Update freeze state
         if (this.isFrozen) {
             this.freezeTimer -= deltaTime;
@@ -100,6 +114,9 @@ class Dinosaur {
     }
 
     handleAI(deltaTime, player, maze, otherDinosaurs) {
+        // Store player position for scatter behavior
+        this.aiTarget = player.getPosition();
+
         this.aiUpdateTimer += deltaTime;
 
         // Update AI decision every 200ms
@@ -129,6 +146,13 @@ class Dinosaur {
         const distance = this.getDistanceToPlayer(player);
         const difficulty = LEVEL_CONFIG[this.level]?.aiDifficulty || 'basic';
 
+        // PRIORITY: If player is invincible (has power-up), ALWAYS flee
+        if (player.isInvincible) {
+            this.aiMode = AIBehavior.SCATTER;
+            return;
+        }
+
+        // Normal behavior when player is vulnerable
         // Basic behavior: always chase
         if (difficulty === 'basic') {
             this.aiMode = AIBehavior.CHASE;
@@ -143,9 +167,7 @@ class Dinosaur {
         }
         // Advanced: strategic behavior
         else {
-            if (player.isInvincible) {
-                this.aiMode = AIBehavior.SCATTER;
-            } else if (distance < TILE_SIZE * 5) {
+            if (distance < TILE_SIZE * 5) {
                 this.aiMode = AIBehavior.CHASE;
             } else if (distance < TILE_SIZE * 15) {
                 this.aiMode = AIBehavior.AMBUSH;
@@ -196,7 +218,55 @@ class Dinosaur {
     }
 
     scatter(maze) {
-        // Move away to corners
+        // Actively flee AWAY from player (not just to corners)
+        // Get player position from aiTarget if available
+        if (!this.aiTarget) {
+            // Fallback to corner scatter if no target
+            this.scatterToCorners(maze);
+            return;
+        }
+
+        const myPos = this.getPosition();
+        const playerPos = this.aiTarget;
+
+        // Calculate direction AWAY from player
+        const dx = myPos.x - playerPos.x;
+        const dy = myPos.y - playerPos.y;
+
+        // Determine best direction to flee
+        let fleeDirection = Direction.NONE;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // Flee horizontally
+            fleeDirection = dx > 0 ? Direction.RIGHT : Direction.LEFT;
+        } else {
+            // Flee vertically
+            fleeDirection = dy > 0 ? Direction.DOWN : Direction.UP;
+        }
+
+        // Try to move in flee direction
+        if (this.canMove(fleeDirection, maze)) {
+            this.direction = fleeDirection;
+        } else {
+            // If blocked, try perpendicular directions
+            const perpendicular = (fleeDirection === Direction.UP || fleeDirection === Direction.DOWN)
+                ? [Direction.LEFT, Direction.RIGHT]
+                : [Direction.UP, Direction.DOWN];
+
+            for (const dir of perpendicular) {
+                if (this.canMove(dir, maze)) {
+                    this.direction = dir;
+                    return;
+                }
+            }
+
+            // Last resort: any valid direction
+            this.chooseRandomDirection(maze);
+        }
+    }
+
+    scatterToCorners(maze) {
+        // Original corner-based scatter behavior
         const corners = [
             { x: TILE_SIZE * 2, y: TILE_SIZE * 2 },
             { x: TILE_SIZE * (GRID_WIDTH - 2), y: TILE_SIZE * 2 },
@@ -362,6 +432,35 @@ class Dinosaur {
         this.freezeTimer = duration;
     }
 
+    sendToCage(duration = 5000) {
+        // Send dinosaur to cage for respawn timer (default 5 seconds)
+        this.isInCage = true;
+        this.cageTimer = duration;
+        this.direction = Direction.NONE;
+
+        // Move to spawn position (cage)
+        this.x = this.spawnX - this.size / 2;
+        this.y = this.spawnY - this.size / 2;
+
+        // Reset abilities
+        this.abilityActive = false;
+        this.abilityDurationTimer = 0;
+
+        console.log(`${this.type} sent to cage for ${duration}ms`);
+    }
+
+    respawnFromCage() {
+        // Release from cage
+        this.isInCage = false;
+        this.cageTimer = 0;
+
+        // Start at spawn position
+        this.x = this.spawnX - this.size / 2;
+        this.y = this.spawnY - this.size / 2;
+
+        console.log(`${this.type} respawned from cage`);
+    }
+
     setActive(isActive) {
         this.isActive = isActive;
     }
@@ -377,18 +476,28 @@ class Dinosaur {
     }
 
     checkCollisionWithPlayer(player) {
-        if (player.isInvincible || this.isFrozen) {
+        // Can't collide if frozen or in cage
+        if (this.isFrozen || this.isInCage) {
             return false;
         }
 
         const playerBounds = player.getBounds();
 
-        return (
+        const isColliding = (
             this.x < playerBounds.x + playerBounds.width &&
             this.x + this.size > playerBounds.x &&
             this.y < playerBounds.y + playerBounds.height &&
             this.y + this.size > playerBounds.y
         );
+
+        // If player is invincible and colliding, send dino to cage
+        if (player.isInvincible && isColliding) {
+            this.sendToCage(5000); // 5 second respawn
+            return false; // Don't hurt the player
+        }
+
+        // Normal collision (player gets hurt)
+        return isColliding;
     }
 
     updateAnimation(deltaTime) {
@@ -406,6 +515,8 @@ class Dinosaur {
         this.direction = Direction.NONE;
         this.isFrozen = false;
         this.freezeTimer = 0;
+        this.isInCage = false;
+        this.cageTimer = 0;
         this.abilityActive = false;
         this.abilityCooldownTimer = 0;
     }

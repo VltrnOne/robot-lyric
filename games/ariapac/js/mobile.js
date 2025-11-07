@@ -17,6 +17,7 @@ class MobileHandler {
         this.joystickStartPos = { x: 0, y: 0 };
         this.joystickCurrentPos = { x: 0, y: 0 };
         this.joystickMaxDistance = 30; // Max pixels the stick can move from center
+        this.joystickDeadZone = 5; // Minimum movement to register (pixels)
 
         // Current movement direction
         this.currentDirection = null;
@@ -341,6 +342,13 @@ class MobileHandler {
         // Calculate distance from center
         const distance = Math.sqrt(dx * dx + dy * dy);
 
+        // Dead zone - ignore small movements
+        if (distance < this.joystickDeadZone) {
+            // Still in dead zone, no movement
+            this.updateMovementKeys(null);
+            return;
+        }
+
         // Limit stick movement
         let limitedDx = dx;
         let limitedDy = dy;
@@ -357,28 +365,40 @@ class MobileHandler {
             joystickStick.style.transform = `translate(${limitedDx}px, ${limitedDy}px)`;
         }
 
-        // Determine direction based on angle
+        // Determine direction based on angle (use actual dx/dy for better accuracy)
         const angle = Math.atan2(dy, dx);
-        const direction = this.angleToDirection(angle);
+        const direction = this.angleToDirection(angle, Math.abs(dx), Math.abs(dy));
 
         // Update movement keys
         this.updateMovementKeys(direction);
     }
 
-    angleToDirection(angle) {
+    angleToDirection(angle, absDx, absDy) {
         // Convert radians to degrees
         const degrees = angle * (180 / Math.PI);
 
-        // Determine direction based on 8-directional input
-        // But we'll simplify to 4 directions for now
-        if (degrees >= -45 && degrees < 45) {
-            return 'right';
-        } else if (degrees >= 45 && degrees < 135) {
-            return 'down';
-        } else if (degrees >= 135 || degrees < -135) {
-            return 'left';
-        } else {
-            return 'up';
+        // Improved direction detection with magnitude consideration
+        // This allows for off-center thumb positions to still register correctly
+
+        // If mostly horizontal movement
+        if (absDx > absDy * 0.6) {
+            return degrees >= -90 && degrees <= 90 ? 'right' : 'left';
+        }
+        // If mostly vertical movement
+        else if (absDy > absDx * 0.6) {
+            return degrees >= 0 ? 'down' : 'up';
+        }
+        // Diagonal or mixed - use standard angle detection
+        else {
+            if (degrees >= -45 && degrees < 45) {
+                return 'right';
+            } else if (degrees >= 45 && degrees < 135) {
+                return 'down';
+            } else if (degrees >= 135 || degrees < -135) {
+                return 'left';
+            } else {
+                return 'up';
+            }
         }
     }
 
