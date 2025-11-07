@@ -78,6 +78,59 @@
             opacity: 0.9;
         }
 
+        /* Games Grid */
+        .games-grid {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .game-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-card-header h3 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .game-card-header .by-line {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .game-card-preview {
+            height: 200px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+        }
+
         /* Game Container */
         .game-container {
             position: fixed;
@@ -91,8 +144,12 @@
             z-index: 1000;
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            display: flex;
+            display: none;
             flex-direction: column;
+        }
+
+        .game-container.active {
+            display: flex;
         }
 
         .game-container.expanded {
@@ -182,6 +239,11 @@
                 font-size: 1.2em;
             }
 
+            .games-grid {
+                grid-template-columns: 1fr;
+                padding: 20px 10px;
+            }
+
             .game-container {
                 bottom: 10px;
                 right: 10px;
@@ -208,13 +270,19 @@
         <p>Premium Gaming Experience</p>
     </div>
 
+    <!-- Games Grid -->
+    <div class="games-grid" id="gamesGrid">
+        <!-- Games will be dynamically added here -->
+    </div>
+
     <!-- Game Container -->
     <div class="game-container" id="gameContainer">
         <div class="game-header">
-            <h2>🤖 ROBOT LYRIC <span style="font-size: 0.7em; opacity: 0.9;">by Lyric and Aria</span></h2>
+            <h2 id="gameTitle">Game Title</h2>
             <div class="game-header-controls">
                 <button class="game-btn" id="expandBtn" onclick="toggleExpand()">⛶ Expand</button>
                 <button class="game-btn" id="minimizeBtn" onclick="toggleMinimize()" style="display: none;">⊟ Minimize</button>
+                <button class="game-btn" id="closeBtn" onclick="closeGame()">✕ Close</button>
             </div>
         </div>
         <div class="game-iframe-wrapper">
@@ -222,15 +290,97 @@
             <iframe 
                 id="gameIframe" 
                 class="game-iframe" 
-                src="index.html"
+                src=""
                 onload="document.getElementById('gameLoading').style.display='none'"
             ></iframe>
         </div>
     </div>
 
     <script>
+        // Game database - Add your games here
+        const games = [
+            {
+                id: 'robot-lyric',
+                title: '🤖 ROBOT LYRIC',
+                by: 'by Lyric and Aria',
+                url: 'games/robot-lyric/index.html',
+                description: 'A fast-paced, retro-style game featuring a robot navigating through obstacles'
+            }
+            // Add more games here:
+            // {
+            //     id: 'game-2',
+            //     title: '🎮 Game 2',
+            //     by: 'by Developer',
+            //     url: 'games/game-2/index.html',
+            //     description: 'Game description'
+            // }
+        ];
+
+        let currentGame = null;
         let isExpanded = false;
         let isMinimized = false;
+
+        // Initialize games
+        function initGames() {
+            const gamesGrid = document.getElementById('gamesGrid');
+            
+            games.forEach(game => {
+                const gameCard = createGameCard(game);
+                gamesGrid.appendChild(gameCard);
+            });
+        }
+
+        // Create game card
+        function createGameCard(game) {
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            card.onclick = () => openGame(game);
+            
+            card.innerHTML = `
+                <div class="game-card-header">
+                    <h3>${game.title}</h3>
+                    <div class="by-line">${game.by || ''}</div>
+                </div>
+                <div class="game-card-preview">
+                    ${game.description || 'Click to play'}
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Open game
+        function openGame(game) {
+            currentGame = game;
+            const container = document.getElementById('gameContainer');
+            const iframe = document.getElementById('gameIframe');
+            const title = document.getElementById('gameTitle');
+            const loading = document.getElementById('gameLoading');
+            
+            title.innerHTML = `${game.title} <span style="font-size: 0.7em; opacity: 0.9;">${game.by || ''}</span>`;
+            loading.style.display = 'block';
+            iframe.src = game.url;
+            container.classList.add('active');
+            container.classList.remove('minimized');
+            isExpanded = false;
+            isMinimized = false;
+            
+            // Reset expand/minimize buttons
+            document.getElementById('expandBtn').style.display = 'block';
+            document.getElementById('minimizeBtn').style.display = 'none';
+        }
+
+        // Close game
+        function closeGame() {
+            const container = document.getElementById('gameContainer');
+            const iframe = document.getElementById('gameIframe');
+            
+            container.classList.remove('active');
+            iframe.src = '';
+            currentGame = null;
+            isExpanded = false;
+            isMinimized = false;
+        }
 
         function toggleExpand() {
             const container = document.getElementById('gameContainer');
@@ -292,7 +442,7 @@
             }
         });
 
-        // Focus iframe when clicked
+        // Focus iframe when loaded
         document.getElementById('gameIframe').addEventListener('load', () => {
             setTimeout(() => {
                 try {
@@ -301,6 +451,18 @@
                     console.log('Could not focus iframe');
                 }
             }, 500);
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentGame) {
+                closeGame();
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initGames();
         });
     </script>
 </body>
