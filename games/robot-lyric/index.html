@@ -885,16 +885,15 @@
             <div id="nameInputScreen">
                 <h1>🤖 ROBOT LYRIC</h1>
                 <h2 style="font-size: 16px; color: #666; margin-top: -10px; margin-bottom: 20px;">by Lyric and Aria</h2>
-                <h2>Enter Your Name (Optional)</h2>
-                <input type="text" id="playerNameInputMain" placeholder="Enter your name (or skip)" maxlength="15" autofocus>
+                <h2>Enter Your Name</h2>
+                <input type="text" id="playerNameInputMain" placeholder="Enter your name" maxlength="15" autofocus>
                 <br>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%;">
-                    <button id="startGameBtn" style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #27AE60; color: white; border: none;">🎮 Start Game</button>
-                    <button id="skipNameBtn" style="width: 200px; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; background: #95A5A6; color: white; border: none;">⏭️ Skip (Play as Guest)</button>
-                    <button id="settingsBtnMain" style="width: 200px; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; background: #F39C12; color: white; border: none;">⚙️ Settings</button>
+                    <button id="startGameBtn" disabled style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #27AE60; color: white; border: none;">Start Game</button>
+                    <button id="settingsBtnMain" style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #F39C12; color: white; border: none;">⚙️ Settings</button>
                 </div>
-                <div style="margin-top: 15px; font-size: 13px; color: #999; text-align: center;">
-                    💡 Tap to fly, avoid obstacles, collect power-ups!
+                <div style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
+                    💡 Your name will be saved globally and shown on the leaderboard
                 </div>
             </div>
             
@@ -1088,6 +1087,7 @@
                 this.instructionsElement = document.getElementById('instructions');
                 this.finalScoreElement = document.getElementById('finalScore');
                 this.restartBtn = document.getElementById('restartBtn');
+                this.multiplayerFromGameOverBtn = document.getElementById('multiplayerFromGameOver');
                 this.mobileControls = document.getElementById('mobileControls');
                 
                 // Iframe expansion elements
@@ -1126,6 +1126,20 @@
                 this.spendingCurrencyElement = document.getElementById('spendingCurrency');
                 this.achievementBankList = document.getElementById('achievementBankList');
                 
+                // Level editor elements
+                this.levelEditorElement = document.getElementById('levelEditor');
+                this.editorModeSelect = document.getElementById('editorModeSelect');
+                this.saveLevelBtn = document.getElementById('saveLevelBtn');
+                this.loadLevelBtn = document.getElementById('loadLevelBtn');
+                this.closeEditorBtn = document.getElementById('closeEditorBtn');
+                
+                // Multiplayer elements
+                this.multiplayerMenuElement = document.getElementById('multiplayerMenu');
+                this.createRoomBtn = document.getElementById('createRoomBtn');
+                this.joinRoomBtn = document.getElementById('joinRoomBtn');
+                this.roomIdInput = document.getElementById('roomIdInput');
+                this.roomStatusElement = document.getElementById('roomStatus');
+                this.closeMultiplayerBtn = document.getElementById('closeMultiplayerBtn');
 
                 this.gameWidth = 800;
                 this.gameHeight = 600;
@@ -1174,11 +1188,26 @@
                 this.obstacleInterval = 2200; // Better pacing (was 2500ms - too slow)
                 this.pointsToNextLevel = 5; // Points needed to advance to next level
                 
-                // Power-up systems (simplified - removed magnet, freeze, double points)
+                // Power-up systems
                 this.coins = [];
                 this.superCoins = [];
                 this.rockets = [];
                 this.rocketBoosts = []; // New rocket boost collectibles
+                this.magnets = []; // Magnet power-up (attracts coins)
+                this.freezes = []; // Freeze power-up (freezes obstacles)
+                this.doublePoints = []; // Double points power-up
+                this.magnetActive = false;
+                this.magnetTimeLeft = 0;
+                this.freezeActive = false;
+                this.freezeTimeLeft = 0;
+                this.doublePointsActive = false;
+                this.doublePointsTimeLeft = 0;
+                this.lastMagnetTime = 0;
+                this.lastFreezeTime = 0;
+                this.lastDoublePointsTime = 0;
+                this.magnetInterval = 20000; // 20 seconds
+                this.freezeInterval = 25000; // 25 seconds
+                this.doublePointsInterval = 30000; // 30 seconds
                 this.shieldCount = 0;
                 this.rocketActive = false;
                 this.rocketTimeLeft = 0;
@@ -1208,12 +1237,15 @@
                 this.robotUpgradeLevel = 0;
                 this.spendingCurrency = 0;
                 
-                // Achievement system (cleaned up - removed disabled features)
+                // Achievement system
                 this.achievements = {
                     firstCoin: false,
                     firstRocket: false,
                     firstOilCan: false,
                     firstSuperCoin: false,
+                    firstMagnet: false,
+                    firstFreeze: false,
+                    firstDoublePoints: false,
                     firstRocketBoost: false,
                     level5: false,
                     level10: false,
@@ -1226,10 +1258,13 @@
                     score2000: false,
                     score5000: false,
                     perfectRun: false,
+                    missileMaster: false,
                     coinCollector: false, // Collect 50 coins
                     powerUpMaster: false, // Collect 20 power-ups
                     speedDemon: false, // Use 10 rocket boosts
                     invincibleWarrior: false, // Use 20 shields
+                    bossSlayer: false, // Defeat first boss
+                    bossMaster: false, // Defeat 5 bosses
                     survivalist: false, // Survive 5 minutes
                     marathonRunner: false // Survive 10 minutes
                 };
@@ -1238,6 +1273,7 @@
                     powerUpsCollected: 0,
                     rocketBoostsUsed: 0,
                     shieldsUsed: 0,
+                    bossesDefeated: 0,
                     playTime: 0
                 };
                 this.achievementBadgesElement = null;
@@ -1294,7 +1330,19 @@
                 this.bossModeEnabled = false; // Boss mode completely disabled
                 this.bossModePromptShown = false; // Track if prompt has been shown
 
-                // Level editor and multiplayer systems removed for production
+                // Level editor system
+                this.levelEditorActive = false;
+                this.editorObstacles = [];
+                this.editorMode = 'obstacle'; // 'obstacle', 'coin', 'powerup'
+                this.savedLevels = [];
+
+                // Multiplayer system
+                this.multiplayerActive = false;
+                this.peerConnection = null;
+                this.dataChannel = null;
+                this.remotePlayer = null;
+                this.isHost = false;
+                this.roomId = null;
 
                 // Player and settings data
                 this.playerName = 'Player';
@@ -1327,26 +1375,9 @@
             }
 
             init() {
-                // Prevent mobile zoom and bounce (iOS/Android)
-                document.addEventListener('touchmove', (e) => {
-                    if (e.scale !== 1) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-
-                // Prevent double-tap zoom on iOS
-                let lastTouchEnd = 0;
-                document.addEventListener('touchend', (e) => {
-                    const now = Date.now();
-                    if (now - lastTouchEnd <= 300) {
-                        e.preventDefault();
-                    }
-                    lastTouchEnd = now;
-                }, false);
-
                 // Setup iframe communication
                 this.setupIframeCommunication();
-
+                
                 // Show/hide expand button based on iframe status
                 if (this.isInIframe && this.expandIframeBtn) {
                     this.expandIframeBtn.style.display = 'block';
@@ -1401,8 +1432,8 @@
                 } else {
                     this.instructionsElement.style.display = 'block';
                 }
-
-                requestAnimationFrame((t) => this.gameLoop(t));
+                
+                this.gameLoop();
             }
             
             handleResize() {
@@ -1961,13 +1992,13 @@
                 });
 
                 // Name input screen events
-                // Name input is now optional - no need to disable button
                 this.playerNameInputMain.addEventListener('input', () => {
-                    // Button is always enabled - name is optional
+                    const name = this.playerNameInputMain.value.trim();
+                    this.startGameBtn.disabled = name.length === 0;
                 });
 
                 this.playerNameInputMain.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' && !this.startGameBtn.disabled) {
                         this.startGameFromNameInput();
                     }
                 });
@@ -1976,20 +2007,77 @@
                     this.startGameFromNameInput();
                 });
 
-                // Skip button - start game as guest
-                const skipNameBtn = document.getElementById('skipNameBtn');
-                if (skipNameBtn) {
-                    skipNameBtn.addEventListener('click', () => {
-                        this.playerNameInputMain.value = ''; // Clear any input
-                        this.startGameFromNameInput(); // Will use "Guest" as default
-                    });
-                }
-
                 this.settingsBtnMain.addEventListener('click', () => {
                     this.showSettings();
                 });
 
-                // Level editor and multiplayer features removed for production
+                // Level editor controls
+                if (this.editorModeSelect) {
+                    this.editorModeSelect.addEventListener('change', (e) => {
+                        this.editorMode = e.target.value;
+                    });
+                }
+
+                if (this.saveLevelBtn) {
+                    this.saveLevelBtn.addEventListener('click', () => {
+                        this.saveLevel();
+                    });
+                }
+
+                if (this.loadLevelBtn) {
+                    this.loadLevelBtn.addEventListener('click', () => {
+                        this.loadLevel();
+                    });
+                }
+
+                if (this.closeEditorBtn) {
+                    this.closeEditorBtn.addEventListener('click', () => {
+                        this.closeLevelEditor();
+                    });
+                }
+
+                // Multiplayer controls
+                if (this.createRoomBtn) {
+                    this.createRoomBtn.addEventListener('click', () => {
+                        this.createMultiplayerRoom();
+                    });
+                }
+
+                if (this.joinRoomBtn) {
+                    this.joinRoomBtn.addEventListener('click', () => {
+                        this.joinMultiplayerRoom();
+                    });
+                }
+
+                if (this.closeMultiplayerBtn) {
+                    this.closeMultiplayerBtn.addEventListener('click', () => {
+                        this.closeMultiplayerMenu();
+                    });
+                }
+
+                // Level editor toggle (E key) and Multiplayer (M key)
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'KeyE' && this.gameState === 'playing') {
+                        this.toggleLevelEditor();
+                    }
+                    // Allow M key from any state
+                    if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('M key pressed, opening multiplayer menu');
+                        this.showMultiplayerMenu();
+                    }
+                }, true); // Use capture phase to catch the event early
+
+                // Canvas click for level editor
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.levelEditorActive) {
+                        const rect = this.canvas.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        this.placeEditorItem(x, y);
+                    }
+                });
             }
 
             startGame() {
@@ -2033,12 +2121,13 @@
 
             startGameFromNameInput() {
                 const name = this.playerNameInputMain.value.trim();
-                // Use provided name or default to "Guest"
-                this.playerName = name.length > 0 ? name : 'Guest';
-                this.saveSettings();
-                this.hideNameInputScreen();
-                this.gameState = 'waiting';
-                this.instructionsElement.style.display = 'block';
+                if (name.length > 0) {
+                    this.playerName = name;
+                    this.saveSettings();
+                    this.hideNameInputScreen();
+                    this.gameState = 'waiting';
+                    this.instructionsElement.style.display = 'block';
+                }
             }
 
             showNameInputScreen() {
@@ -5250,30 +5339,19 @@
             }
 
 
-            gameLoop(timestamp) {
-                // Calculate delta time for smooth animation
-                if (!this.lastFrameTime) this.lastFrameTime = timestamp;
-                const deltaTime = timestamp - this.lastFrameTime;
-                this.lastFrameTime = timestamp;
-
-                // Skip frame if delta time is too large (tab switching, etc.)
-                if (deltaTime > 100) {
-                    requestAnimationFrame((t) => this.gameLoop(t));
-                    return;
-                }
-
+            gameLoop() {
                 this.update();
                 this.draw();
                 this.updateMusic();
-
+                
                 // Auto-save every 30 seconds
                 const now = Date.now();
                 if (now - this.lastAutoSaveTime > this.autoSaveInterval) {
                     this.autoSave();
                     this.lastAutoSaveTime = now;
                 }
-
-                requestAnimationFrame((t) => this.gameLoop(t));
+                
+                requestAnimationFrame(() => this.gameLoop());
             }
 
             // Audio System
