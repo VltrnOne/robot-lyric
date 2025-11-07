@@ -843,6 +843,10 @@
                 this.multiplayerFromGameOverBtn = document.getElementById('multiplayerFromGameOver');
                 this.mobileControls = document.getElementById('mobileControls');
                 
+                // Iframe expansion elements
+                this.expandIframeBtn = document.getElementById('expandIframeBtn');
+                this.isInIframe = window.self !== window.top;
+                
                 // Settings elements
                 this.settingsBtn = document.getElementById('settingsBtn');
                 this.settingsMenu = document.getElementById('settingsMenu');
@@ -1106,6 +1110,16 @@
             }
 
             init() {
+                // Setup iframe communication
+                this.setupIframeCommunication();
+                
+                // Show/hide expand button based on iframe status
+                if (this.isInIframe && this.expandIframeBtn) {
+                    this.expandIframeBtn.style.display = 'block';
+                } else if (this.expandIframeBtn) {
+                    this.expandIframeBtn.style.display = 'none';
+                }
+                
                 this.loadSettings();
                 this.setupEventListeners();
                 this.createClouds();
@@ -1615,6 +1629,13 @@
                 this.closeLeaderboardBtn.addEventListener('click', () => {
                     this.closeLeaderboard();
                 });
+
+                // Expand iframe button
+                if (this.expandIframeBtn) {
+                    this.expandIframeBtn.addEventListener('click', () => {
+                        this.requestFullscreenExpansion();
+                    });
+                }
 
                 // Multiplayer button in settings
                 const showMultiplayerBtn = document.getElementById('showMultiplayer');
@@ -3404,6 +3425,52 @@
 
             closeLeaderboard() {
                 this.leaderboard.style.display = 'none';
+            }
+
+            setupIframeCommunication() {
+                // Listen for messages from parent window
+                window.addEventListener('message', (event) => {
+                    // Verify origin for security (adjust as needed)
+                    // if (event.origin !== 'https://yourdomain.com') return;
+                    
+                    if (event.data && event.data.type === 'iframe-resize') {
+                        // Handle iframe resize requests from parent
+                        this.handleIframeResize(event.data);
+                    }
+                });
+
+                // Notify parent that game is ready
+                if (this.isInIframe) {
+                    try {
+                        window.parent.postMessage({
+                            type: 'game-ready',
+                            game: 'robot-lyric'
+                        }, '*');
+                    } catch (e) {
+                        console.log('Could not communicate with parent window');
+                    }
+                }
+            }
+
+            requestFullscreenExpansion() {
+                if (this.isInIframe) {
+                    try {
+                        window.parent.postMessage({
+                            type: 'request-fullscreen',
+                            game: 'robot-lyric',
+                            url: window.location.href
+                        }, '*');
+                    } catch (e) {
+                        console.log('Could not request fullscreen expansion');
+                    }
+                }
+            }
+
+            handleIframeResize(data) {
+                // Handle resize requests if needed
+                if (data.width && data.height) {
+                    // Adjust game canvas if needed
+                }
             }
 
             closeAllMenus() {
