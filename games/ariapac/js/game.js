@@ -196,31 +196,40 @@ class AriaPacGame {
             overlay.classList.remove('active');
         });
 
-        // Show appropriate overlay
+        // Get player HUD element
+        const playerHud = document.getElementById('player-hud');
+
+        // Show appropriate overlay and manage HUD visibility
         switch (newState) {
             case GameState.MENU:
                 document.getElementById('menu-overlay').classList.add('active');
                 audioSystem.stopBackgroundMusic();
                 if (this.mobileHandler) this.mobileHandler.hideControls();
+                if (playerHud) playerHud.classList.remove('visible'); // Hide HUD in menu
                 break;
             case GameState.INSTRUCTIONS:
                 document.getElementById('instructions-overlay').classList.add('active');
                 if (this.mobileHandler) this.mobileHandler.hideControls();
+                if (playerHud) playerHud.classList.remove('visible'); // Hide HUD in instructions
                 break;
             case GameState.PLAYING:
                 this.startGameLoop();
                 audioSystem.startBackgroundMusic();
                 if (this.mobileHandler) this.mobileHandler.showControls();
+                if (playerHud) playerHud.classList.add('visible'); // Show HUD when playing
                 break;
             case GameState.PAUSED:
                 document.getElementById('pause-overlay').classList.add('active');
+                if (playerHud) playerHud.classList.add('visible'); // Keep HUD visible when paused
                 break;
             case GameState.LEVEL_COMPLETE:
                 this.handleLevelComplete();
+                if (playerHud) playerHud.classList.add('visible'); // Keep HUD visible for level complete
                 break;
             case GameState.GAME_OVER:
                 this.handleGameOver();
                 if (this.mobileHandler) this.mobileHandler.hideControls();
+                if (playerHud) playerHud.classList.remove('visible'); // Hide HUD in game over
                 break;
         }
     }
