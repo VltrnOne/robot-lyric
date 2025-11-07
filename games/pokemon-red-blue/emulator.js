@@ -112,6 +112,39 @@ function loadEmulatorJS() {
     window.EJS_gameName = 'Pokemon Red';
     window.EJS_gameType = 'gb';
     
+    // Additional settings to help with network issues
+    window.EJS_gameParent = window.location.href.split('/').slice(0, -1).join('/');
+    window.EJS_defaultControls = {
+        UP: 'ArrowUp',
+        DOWN: 'ArrowDown',
+        LEFT: 'ArrowLeft',
+        RIGHT: 'ArrowRight',
+        A: 'KeyZ',
+        B: 'KeyX',
+        START: 'Enter',
+        SELECT: 'ShiftLeft'
+    };
+    
+    // Verify ROM file is accessible before loading
+    fetch(romUrl, { method: 'HEAD' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`ROM file not accessible: ${response.status} ${response.statusText}`);
+            }
+            console.log('ROM file is accessible:', romUrl);
+            // ROM is accessible, proceed with loading
+            loadEmulatorJSScript();
+        })
+        .catch(error => {
+            console.error('ROM file check failed:', error);
+            showError(`Cannot access ROM file: ${error.message}. Please ensure the ROM files are deployed correctly.`);
+        });
+}
+
+function loadEmulatorJSScript() {
+    const container = document.getElementById('emulatorjs-container');
+    const loading = document.querySelector('.loading');
+    
     // Load EmulatorJS script from CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
@@ -192,56 +225,69 @@ function loadGame(romFile) {
     console.log('Loading ROM from:', romUrl);
     console.log('Current location:', window.location.href);
     
-    // Clear container
-    if (container) {
-        container.innerHTML = '';
-    }
-    
-    // Update EmulatorJS configuration
-    window.EJS_gameUrl = romUrl; // Use relative path
-    window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
-    
-    // Remove old script
-    const oldScripts = document.querySelectorAll('script[src*="loader.js"]');
-    oldScripts.forEach(script => script.remove());
-    
-    // Reload EmulatorJS with new ROM
-    const script = document.createElement('script');
-    script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-    script.crossOrigin = 'anonymous';
-    script.async = false;
-    
-    script.onload = () => {
-        console.log('Game loaded:', romFile);
-        
-        // Wait for initialization
-        let checkCount = 0;
-        const maxChecks = 30;
-        
-        const checkInitialization = setInterval(() => {
-            checkCount++;
-            
-            if (container && (container.children.length > 0 || 
-                container.querySelector('iframe') || 
-                container.querySelector('canvas'))) {
-                console.log('Game initialized successfully!');
-                clearInterval(checkInitialization);
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-            } else if (checkCount >= maxChecks) {
-                console.error('Game failed to initialize');
-                clearInterval(checkInitialization);
-                showError('Failed to load game. Please check the browser console for details.');
+    // Verify ROM file is accessible before loading
+    fetch(romUrl, { method: 'HEAD' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`ROM file not accessible: ${response.status} ${response.statusText}`);
             }
-        }, 500);
-    };
-    
-    script.onerror = () => {
-        showError('Failed to load game. Please try again.');
-    };
-    
-    document.head.appendChild(script);
+            console.log('ROM file is accessible:', romUrl);
+            
+            // Clear container
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            // Update EmulatorJS configuration
+            window.EJS_gameUrl = romUrl; // Use relative path
+            window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
+            
+            // Remove old script
+            const oldScripts = document.querySelectorAll('script[src*="loader.js"]');
+            oldScripts.forEach(script => script.remove());
+            
+            // Reload EmulatorJS with new ROM
+            const script = document.createElement('script');
+            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+            script.crossOrigin = 'anonymous';
+            script.async = false;
+            
+            script.onload = () => {
+                console.log('Game loaded:', romFile);
+                
+                // Wait for initialization
+                let checkCount = 0;
+                const maxChecks = 30;
+                
+                const checkInitialization = setInterval(() => {
+                    checkCount++;
+                    
+                    if (container && (container.children.length > 0 || 
+                        container.querySelector('iframe') || 
+                        container.querySelector('canvas'))) {
+                        console.log('Game initialized successfully!');
+                        clearInterval(checkInitialization);
+                        if (loading) {
+                            loading.style.display = 'none';
+                        }
+                    } else if (checkCount >= maxChecks) {
+                        console.error('Game failed to initialize');
+                        clearInterval(checkInitialization);
+                        showError('Failed to load game. Please check the browser console for details.');
+                    }
+                }, 500);
+            };
+            
+            script.onerror = () => {
+                showError('Failed to load game. Please try again.');
+            };
+            
+            document.head.appendChild(script);
+        })
+        .catch(error => {
+            console.error('ROM file check failed:', error);
+            showError(`Cannot access ROM file: ${error.message}. Please ensure the ROM files are deployed correctly.`);
+        });
 }
 
 function showError(message) {
