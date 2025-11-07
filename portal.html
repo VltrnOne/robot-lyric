@@ -375,6 +375,23 @@
             }
         });
 
+        // Listen for messages from iframes
+        window.addEventListener('message', (event) => {
+            // Verify origin for security (adjust as needed)
+            // if (event.origin !== 'https://yourdomain.com') return;
+            
+            if (event.data && event.data.type === 'request-fullscreen') {
+                // Find the game and open it in fullscreen
+                const game = games.find(g => g.id === event.data.game);
+                if (game) {
+                    openFullscreen(game.id);
+                }
+            } else if (event.data && event.data.type === 'game-ready') {
+                // Game is ready, can enable interactions
+                console.log(`Game ${event.data.game} is ready`);
+            }
+        });
+
         // Initialize on load
         window.addEventListener('load', () => {
             initGames();
