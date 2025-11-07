@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#87CEEB">
     <title>ROBOT LYRIC by Lyric and Aria - Flying Robot Game</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="robot-icon.png">
     <!-- Redirect to portal if accessed directly on desktop -->
     <script>
         // Only redirect on desktop, not mobile, and not if already in iframe
@@ -27,6 +35,25 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            /* iOS Safari fixes */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            /* Handle notches and safe areas */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        /* Prevent pull-to-refresh and bounce on iOS */
+        html, body {
+            overscroll-behavior: none;
+            touch-action: pan-x pan-y;
+            position: fixed;
+            overflow: hidden;
         }
 
         #gameContainer {
@@ -43,6 +70,42 @@
         #gameCanvas {
             display: block;
             background: transparent;
+            /* Crisp rendering on high-DPI screens */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        /* Touch ripple effect */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            animation: ripple-animation 0.6s ease-out;
+            z-index: 5;
+        }
+
+        @keyframes ripple-animation {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Fullscreen mode styles */
+        #gameContainer.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            z-index: 9999;
         }
 
         #ui {
@@ -73,7 +136,7 @@
                 flex-direction: column;
                 align-items: center;
             }
-            
+
             #gameContainer {
                 width: 100vw;
                 height: 100vh;
@@ -82,35 +145,112 @@
                 border: none;
                 border-radius: 0;
             }
-            
+
             #gameCanvas {
                 width: 100% !important;
                 height: 100% !important;
             }
+
+            /* Larger UI elements for mobile */
+            #score {
+                font-size: 22px;
+                bottom: 150px;
+                padding: 10px 18px;
+            }
+
+            #level {
+                font-size: 20px;
+                top: env(safe-area-inset-top, 20px);
+            }
+
+            #settingsBtn {
+                top: env(safe-area-inset-top, 20px);
+                right: env(safe-area-inset-right, 20px);
+                padding: 12px 18px;
+                font-size: 18px;
+            }
         }
-        
+
+        /* Portrait mode optimizations */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #gameContainer {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #score {
+                font-size: 28px;
+                bottom: 180px;
+            }
+
+            /* Adjust power-up status for portrait */
+            #powerUpStatus {
+                top: 80px;
+                right: 10px;
+                font-size: 16px;
+            }
+
+            .mobile-btn {
+                min-width: 70px;
+                min-height: 70px;
+                font-size: 22px;
+                padding: 18px 28px;
+            }
+        }
+
+        /* Landscape mode optimizations */
         @media (max-width: 768px) and (orientation: landscape) {
             #gameContainer {
                 width: 100vw;
                 height: 100vh;
                 transform: scale(1);
             }
-            
+
             #gameCanvas {
                 width: 100vw !important;
                 height: 100vh !important;
             }
-            
+
             #mobileControls {
-                bottom: 5px;
+                bottom: env(safe-area-inset-bottom, 5px);
                 gap: 5px;
             }
-            
+
             .mobile-btn {
+                padding: 10px 14px;
+                font-size: 16px;
+                min-width: 50px;
+                min-height: 50px;
+            }
+
+            #score {
+                font-size: 20px;
+                bottom: 100px;
+            }
+
+            /* Compact UI for landscape */
+            #level {
+                font-size: 18px;
+            }
+
+            #settingsBtn {
                 padding: 8px 12px;
                 font-size: 14px;
-                min-width: 45px;
-                min-height: 45px;
+            }
+        }
+
+        /* Extra small devices in landscape */
+        @media (max-height: 450px) and (orientation: landscape) {
+            .mobile-btn {
+                min-width: 44px;
+                min-height: 44px;
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+
+            #score {
+                font-size: 16px;
+                bottom: 70px;
             }
         }
 
@@ -745,15 +885,16 @@
             <div id="nameInputScreen">
                 <h1>🤖 ROBOT LYRIC</h1>
                 <h2 style="font-size: 16px; color: #666; margin-top: -10px; margin-bottom: 20px;">by Lyric and Aria</h2>
-                <h2>Enter Your Name</h2>
-                <input type="text" id="playerNameInputMain" placeholder="Enter your name" maxlength="15" autofocus>
+                <h2>Enter Your Name (Optional)</h2>
+                <input type="text" id="playerNameInputMain" placeholder="Enter your name (or skip)" maxlength="15" autofocus>
                 <br>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%;">
-                    <button id="startGameBtn" disabled style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #27AE60; color: white; border: none;">Start Game</button>
-                    <button id="settingsBtnMain" style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #F39C12; color: white; border: none;">⚙️ Settings</button>
+                    <button id="startGameBtn" style="width: 200px; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; background: #27AE60; color: white; border: none;">🎮 Start Game</button>
+                    <button id="skipNameBtn" style="width: 200px; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; background: #95A5A6; color: white; border: none;">⏭️ Skip (Play as Guest)</button>
+                    <button id="settingsBtnMain" style="width: 200px; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; background: #F39C12; color: white; border: none;">⚙️ Settings</button>
                 </div>
-                <div style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
-                    💡 Your name will be saved globally and shown on the leaderboard
+                <div style="margin-top: 15px; font-size: 13px; color: #999; text-align: center;">
+                    💡 Tap to fly, avoid obstacles, collect power-ups!
                 </div>
             </div>
             
@@ -837,7 +978,105 @@
         </div>
     </div>
 
+    <!-- Graphics Enhancement System -->
+    <script src="graphics-enhancement.js"></script>
+
     <script>
+        /*
+        ╔═══════════════════════════════════════════════════════════════════════════╗
+        ║                    ROBOT LYRIC - MECHANICS TUNING GUIDE                    ║
+        ║                         Flappy Bird Style Overhaul                         ║
+        ╚═══════════════════════════════════════════════════════════════════════════╝
+
+        CORE PHYSICS VALUES (Lines ~1048-1051):
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        • gravity: 0.65 (was 0.4)
+          - Increased 62.5% for snappier, more responsive fall
+          - Feels tight and precise like Flappy Bird
+          - Range: 0.5-0.8 (lower = floatier, higher = harder)
+
+        • jumpForce: -10.5 (was -10)
+          - Adjusted for new gravity to maintain jump height
+          - Instant response on input
+          - Range: -9 to -12 (lower = higher jumps)
+
+        • terminalVelocity: 12 (NEW)
+          - Caps maximum fall speed for better control
+          - Prevents uncontrollable plummeting
+          - Range: 10-15 (lower = easier, higher = more challenging)
+
+        • baseObstacleSpeed: 3.5 (was 2)
+          - 75% faster starting speed for immediate challenge
+          - Players feel engaged from the start
+          - Range: 2.5-4.5 (lower = easier start, higher = harder)
+
+        DIFFICULTY PROGRESSION (Lines ~2264-2272):
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        • Speed Scaling: baseSpeed + (level - 1) * 1.2 (was * 0.8)
+          - 50% more aggressive speed increase
+          - Keeps game challenging as player improves
+
+        • Obstacle Interval: max(1200, 2500 - (level - 1) * 250) (was 1500/200)
+          - Faster spawn rate increase
+          - Creates urgency without overwhelming
+
+        • Dynamic Gap Sizing: baseGap - min((level - 1) * 5, baseGap - minGap)
+          - Gradually shrinks from 220px to 160px (desktop)
+          - Stays fair but increases precision requirement
+          - Mobile: 260px -> 180px
+
+        POWER-UP SYSTEM (Simplified):
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        ACTIVE POWER-UPS:
+        1. Coins - Every 5s (main mechanic, grants shield)
+           - Simplified from 7 tiers to 4: Bronze, Silver, Gold, Diamond
+        2. Super Coins - Every 30s (bonus coins)
+        3. Rockets - Every 12s (slow motion + control, was 8s)
+        4. Rocket Boosts - Every 18s (speed boost, was 10s)
+        5. Oil Cans - Every 15s (health restoration)
+
+        DISABLED (Too cluttered):
+        ✗ Magnets - Caused visual bugs
+        ✗ Freeze - Too powerful, breaks flow
+        ✗ Double Points - Unnecessary complexity
+
+        GAME JUICE (Visual/Audio Feedback):
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        • Screen Shake:
+          - Jump: intensity 3
+          - Shield collision: intensity 6
+          - Level up: intensity 8
+          - Decays at 90% per frame
+
+        • Jump Particles:
+          - 5 particles per jump
+          - Blue gradient (hsl 190-210)
+          - 20 frame lifetime with gravity
+          - Creates satisfying visual feedback
+
+        TUNING RECOMMENDATIONS:
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        Too Easy?
+        • Increase gravity (0.7-0.75)
+        • Decrease obstacleGap (-10 to -20px)
+        • Increase baseObstacleSpeed (+0.5)
+
+        Too Hard?
+        • Decrease gravity (0.55-0.6)
+        • Increase obstacleGap (+10 to +20px)
+        • Decrease baseObstacleSpeed (-0.5)
+
+        Slow Pacing?
+        • Decrease obstacleInterval (-200ms)
+        • Increase speed scaling multiplier (+0.2)
+
+        Fast Pacing?
+        • Increase obstacleInterval (+200ms)
+        • Decrease speed scaling multiplier (-0.2)
+
+        ╚═══════════════════════════════════════════════════════════════════════════╝
+        */
+
         class InTheAirGame {
             constructor() {
                 this.canvas = document.getElementById('gameCanvas');
@@ -849,7 +1088,6 @@
                 this.instructionsElement = document.getElementById('instructions');
                 this.finalScoreElement = document.getElementById('finalScore');
                 this.restartBtn = document.getElementById('restartBtn');
-                this.multiplayerFromGameOverBtn = document.getElementById('multiplayerFromGameOver');
                 this.mobileControls = document.getElementById('mobileControls');
                 
                 // Iframe expansion elements
@@ -888,31 +1126,24 @@
                 this.spendingCurrencyElement = document.getElementById('spendingCurrency');
                 this.achievementBankList = document.getElementById('achievementBankList');
                 
-                // Level editor elements
-                this.levelEditorElement = document.getElementById('levelEditor');
-                this.editorModeSelect = document.getElementById('editorModeSelect');
-                this.saveLevelBtn = document.getElementById('saveLevelBtn');
-                this.loadLevelBtn = document.getElementById('loadLevelBtn');
-                this.closeEditorBtn = document.getElementById('closeEditorBtn');
-                
-                // Multiplayer elements
-                this.multiplayerMenuElement = document.getElementById('multiplayerMenu');
-                this.createRoomBtn = document.getElementById('createRoomBtn');
-                this.joinRoomBtn = document.getElementById('joinRoomBtn');
-                this.roomIdInput = document.getElementById('roomIdInput');
-                this.roomStatusElement = document.getElementById('roomStatus');
-                this.closeMultiplayerBtn = document.getElementById('closeMultiplayerBtn');
 
                 this.gameWidth = 800;
                 this.gameHeight = 600;
-                this.gravity = 0.4; // Slightly reduced for robot
-                this.jumpForce = -10; // Slightly reduced for robot
-                this.baseObstacleSpeed = 2; // Slower starting speed
+                this.gravity = 0.65; // FLAPPY BIRD STYLE: Snappier fall (was 0.4)
+                this.jumpForce = -10.5; // FLAPPY BIRD STYLE: Instant response (was -10)
+                this.terminalVelocity = 12; // Max fall speed for better control
+                this.baseObstacleSpeed = 3.5; // Better initial challenge (was 2)
                 this.rocketSpeedMultiplier = 0.3; // Speed reduction during rocket mode
-                // Responsive obstacle gap - larger on mobile for easier navigation
+                // Dynamic obstacle gap - scales with difficulty for better progression
                 const isMobile = window.innerWidth <= 768 || window.screen.width <= 768;
-                this.obstacleGap = isMobile ? 250 : 200; // Larger gap on mobile
+                this.baseObstacleGap = isMobile ? 260 : 220; // Starting gap (slightly larger)
+                this.minObstacleGap = isMobile ? 180 : 160; // Minimum gap at high difficulty
+                this.obstacleGap = this.baseObstacleGap;
                 this.obstacleWidth = 60;
+
+                // Game juice - screen shake and particles
+                this.screenShake = { x: 0, y: 0, intensity: 0 };
+                this.jumpParticles = [];
 
                 this.gameState = 'nameInput'; // nameInput, waiting, playing, gameOver
                 this.score = 0;
@@ -925,34 +1156,29 @@
                     height: 35,
                     velocity: 0,
                     rotation: 0,
-                    eyeGlow: 0 // For robot eye animation
+                    eyeGlow: 0, // For robot eye animation
+                    animationState: 'idle', // idle, flap, fall, death
+                    animationFrame: 0,
+                    hoverOffset: 0,
+                    hoverPhase: 0,
+                    wingFlap: 0
                 };
+
+                // Particle system for visual effects
+                this.particles = [];
+                this.scrollOffset = 0;
+
                 this.obstacles = [];
                 this.clouds = [];
                 this.lastObstacleTime = 0;
-                this.obstacleInterval = 2500; // Slower initial obstacle generation
+                this.obstacleInterval = 2200; // Better pacing (was 2500ms - too slow)
                 this.pointsToNextLevel = 5; // Points needed to advance to next level
                 
-                // Power-up systems
+                // Power-up systems (simplified - removed magnet, freeze, double points)
                 this.coins = [];
                 this.superCoins = [];
                 this.rockets = [];
                 this.rocketBoosts = []; // New rocket boost collectibles
-                this.magnets = []; // Magnet power-up (attracts coins)
-                this.freezes = []; // Freeze power-up (freezes obstacles)
-                this.doublePoints = []; // Double points power-up
-                this.magnetActive = false;
-                this.magnetTimeLeft = 0;
-                this.freezeActive = false;
-                this.freezeTimeLeft = 0;
-                this.doublePointsActive = false;
-                this.doublePointsTimeLeft = 0;
-                this.lastMagnetTime = 0;
-                this.lastFreezeTime = 0;
-                this.lastDoublePointsTime = 0;
-                this.magnetInterval = 20000; // 20 seconds
-                this.freezeInterval = 25000; // 25 seconds
-                this.doublePointsInterval = 30000; // 30 seconds
                 this.shieldCount = 0;
                 this.rocketActive = false;
                 this.rocketTimeLeft = 0;
@@ -967,31 +1193,27 @@
                 this.lastSuperCoinTime = 0;
                 this.lastRocketTime = 0;
                 this.lastRocketBoostTime = 0;
-                this.coinInterval = 6000; // 6 seconds between coins (reduced frequency)
-                this.rocketBoostInterval = 10000; // 10 seconds between rocket boosts
+                // SIMPLIFIED POWER-UP SYSTEM - Reduced frequency for cleaner gameplay
+                this.coinInterval = 5000; // 5 seconds between coins (main power-up)
+                this.rocketBoostInterval = 18000; // 18 seconds between rocket boosts (less frequent)
+                this.rocketInterval = 12000; // 12 seconds between slow-mo rockets (was 8s)
                 
-                // Coin rarity system
+                // SIMPLIFIED Coin rarity system - Reduced from 7 to 4 tiers
                 this.coinRarities = [
-                    { name: 'Bronze', color: '#CD7F32', value: 1, rarity: 0.35, lifetime: 20 },     // 35% - 20 gates
-                    { name: 'Silver', color: '#C0C0C0', value: 2, rarity: 0.25, lifetime: 20 },     // 25% - 20 gates
-                    { name: 'Gold', color: '#FFD700', value: 3, rarity: 0.20, lifetime: 20 },       // 20% - 20 gates
-                    { name: 'Emerald', color: '#50C878', value: 5, rarity: 0.10, lifetime: 10 },    // 10% - 10 gates
-                    { name: 'Sapphire', color: '#0F52BA', value: 8, rarity: 0.06, lifetime: 10 },   // 6% - 10 gates
-                    { name: 'Ruby', color: '#E0115F', value: 12, rarity: 0.03, lifetime: 10 },      // 3% - 10 gates
-                    { name: 'Diamond', color: '#B9F2FF', value: 20, rarity: 0.01, lifetime: 10 }    // 1% - 10 gates
+                    { name: 'Bronze', color: '#CD7F32', value: 1, rarity: 0.50, lifetime: 20 },     // 50% - Common
+                    { name: 'Silver', color: '#C0C0C0', value: 2, rarity: 0.30, lifetime: 20 },     // 30% - Uncommon
+                    { name: 'Gold', color: '#FFD700', value: 3, rarity: 0.15, lifetime: 15 },       // 15% - Rare
+                    { name: 'Diamond', color: '#B9F2FF', value: 5, rarity: 0.05, lifetime: 15 }     // 5% - Epic
                 ];
                 this.robotUpgradeLevel = 0;
                 this.spendingCurrency = 0;
                 
-                // Achievement system
+                // Achievement system (cleaned up - removed disabled features)
                 this.achievements = {
                     firstCoin: false,
                     firstRocket: false,
                     firstOilCan: false,
                     firstSuperCoin: false,
-                    firstMagnet: false,
-                    firstFreeze: false,
-                    firstDoublePoints: false,
                     firstRocketBoost: false,
                     level5: false,
                     level10: false,
@@ -1004,13 +1226,10 @@
                     score2000: false,
                     score5000: false,
                     perfectRun: false,
-                    missileMaster: false,
                     coinCollector: false, // Collect 50 coins
                     powerUpMaster: false, // Collect 20 power-ups
                     speedDemon: false, // Use 10 rocket boosts
                     invincibleWarrior: false, // Use 20 shields
-                    bossSlayer: false, // Defeat first boss
-                    bossMaster: false, // Defeat 5 bosses
                     survivalist: false, // Survive 5 minutes
                     marathonRunner: false // Survive 10 minutes
                 };
@@ -1019,7 +1238,6 @@
                     powerUpsCollected: 0,
                     rocketBoostsUsed: 0,
                     shieldsUsed: 0,
-                    bossesDefeated: 0,
                     playTime: 0
                 };
                 this.achievementBadgesElement = null;
@@ -1076,19 +1294,7 @@
                 this.bossModeEnabled = false; // Boss mode completely disabled
                 this.bossModePromptShown = false; // Track if prompt has been shown
 
-                // Level editor system
-                this.levelEditorActive = false;
-                this.editorObstacles = [];
-                this.editorMode = 'obstacle'; // 'obstacle', 'coin', 'powerup'
-                this.savedLevels = [];
-
-                // Multiplayer system
-                this.multiplayerActive = false;
-                this.peerConnection = null;
-                this.dataChannel = null;
-                this.remotePlayer = null;
-                this.isHost = false;
-                this.roomId = null;
+                // Level editor and multiplayer systems removed for production
 
                 // Player and settings data
                 this.playerName = 'Player';
@@ -1121,9 +1327,26 @@
             }
 
             init() {
+                // Prevent mobile zoom and bounce (iOS/Android)
+                document.addEventListener('touchmove', (e) => {
+                    if (e.scale !== 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                // Prevent double-tap zoom on iOS
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (e) => {
+                    const now = Date.now();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+
                 // Setup iframe communication
                 this.setupIframeCommunication();
-                
+
                 // Show/hide expand button based on iframe status
                 if (this.isInIframe && this.expandIframeBtn) {
                     this.expandIframeBtn.style.display = 'block';
@@ -1144,9 +1367,26 @@
                 });
                 
                 window.addEventListener('orientationchange', () => {
+                    // Pause game during orientation change
+                    const wasPlaying = this.gameState === 'playing';
+                    if (wasPlaying) {
+                        this.gameState = 'paused';
+                    }
+
+                    // Show orientation change overlay
+                    this.showOrientationChangeOverlay();
+
                     setTimeout(() => {
                         this.handleResize();
                         this.updateMobileControlsVisibility();
+
+                        // Hide overlay and resume game after resize
+                        setTimeout(() => {
+                            this.hideOrientationChangeOverlay();
+                            if (wasPlaying) {
+                                this.gameState = 'playing';
+                            }
+                        }, 300);
                     }, 200);
                 });
                 
@@ -1161,54 +1401,100 @@
                 } else {
                     this.instructionsElement.style.display = 'block';
                 }
-                
-                this.gameLoop();
+
+                requestAnimationFrame((t) => this.gameLoop(t));
             }
             
             handleResize() {
                 // Adjust canvas size for mobile and landscape
                 const container = document.getElementById('gameContainer');
                 const canvas = this.canvas;
-                
+
                 if (!canvas || !container) return;
-                
+
                 // Use window dimensions or screen dimensions for mobile
                 const isMobile = window.innerWidth <= 768 || window.screen.width <= 768;
-                
-                // Update obstacle gap for mobile responsiveness
-                this.obstacleGap = isMobile ? 250 : 200;
-                
+                const isPortrait = window.innerHeight > window.innerWidth;
+                const isLandscape = !isPortrait;
+
+                // Dynamic obstacle gap based on orientation and screen size
+                if (isMobile) {
+                    if (isPortrait) {
+                        // Portrait mode - larger gap for vertical scrolling
+                        this.obstacleGap = Math.max(280, window.innerHeight * 0.35);
+                    } else {
+                        // Landscape mode - medium gap
+                        this.obstacleGap = Math.max(220, window.innerHeight * 0.45);
+                    }
+                } else {
+                    this.obstacleGap = 200;
+                }
+
                 if (isMobile) {
                     // Mobile mode - use full viewport
                     const width = window.innerWidth || window.screen.width;
                     const height = window.innerHeight || window.screen.height;
-                    
+
+                    // Get device pixel ratio for crisp rendering
+                    const dpr = window.devicePixelRatio || 1;
+
                     container.style.width = width + 'px';
                     container.style.height = height + 'px';
                     container.style.maxWidth = '100vw';
                     container.style.maxHeight = '100vh';
-                    
-                    // Set canvas actual size (not just CSS)
-                    canvas.width = width;
-                    canvas.height = height;
+
+                    // Set canvas actual size with device pixel ratio for crisp rendering
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+
+                    // Scale canvas back down with CSS
+                    canvas.style.width = width + 'px';
+                    canvas.style.height = height + 'px';
+
+                    // Scale the context to match
+                    this.ctx.scale(dpr, dpr);
+
                     this.gameWidth = width;
                     this.gameHeight = height;
-                    
+                    this.devicePixelRatio = dpr;
+
                     // Update robot position if needed
                     if (this.robot) {
                         this.robot.y = Math.min(this.robot.y, height - 50);
                     }
+
+                    // Adjust game difficulty based on orientation
+                    if (isPortrait) {
+                        // Portrait: slower, easier
+                        this.portraitMode = true;
+                        this.baseObstacleSpeed = Math.max(1.5, this.baseObstacleSpeed * 0.85);
+                    } else {
+                        // Landscape: normal speed
+                        this.portraitMode = false;
+                        if (this.baseObstacleSpeed < 2) {
+                            this.baseObstacleSpeed = 2;
+                        }
+                    }
                 } else {
                     // Desktop mode - use fixed size
+                    const dpr = window.devicePixelRatio || 1;
+
                     container.style.width = '800px';
                     container.style.height = '600px';
                     container.style.maxWidth = '800px';
                     container.style.maxHeight = '600px';
-                    
-                    canvas.width = 800;
-                    canvas.height = 600;
+
+                    canvas.width = 800 * dpr;
+                    canvas.height = 600 * dpr;
+                    canvas.style.width = '800px';
+                    canvas.style.height = '600px';
+
+                    this.ctx.scale(dpr, dpr);
+
                     this.gameWidth = 800;
                     this.gameHeight = 600;
+                    this.devicePixelRatio = dpr;
+                    this.portraitMode = false;
                 }
             }
 
@@ -1248,7 +1534,7 @@
                 let touchStartY = 0;
                 let touchStartX = 0;
                 let isTouching = false;
-                
+
                 this.canvas.addEventListener('touchstart', (e) => {
                     try {
                         e.preventDefault();
@@ -1256,14 +1542,17 @@
                         if (!this.audioContextReady && this.audioContext) {
                             this.resumeAudioContext();
                         }
-                        
+
                         const touch = e.touches && e.touches[0];
                         if (!touch) return;
-                        
+
                         touchStartY = touch.clientY;
                         touchStartX = touch.clientX;
                         isTouching = true;
-                        
+
+                        // Create touch ripple effect
+                        this.createTouchRipple(touch.clientX, touch.clientY);
+
                         // Defer game actions to prevent blocking
                         setTimeout(() => {
                             try {
@@ -1672,13 +1961,13 @@
                 });
 
                 // Name input screen events
+                // Name input is now optional - no need to disable button
                 this.playerNameInputMain.addEventListener('input', () => {
-                    const name = this.playerNameInputMain.value.trim();
-                    this.startGameBtn.disabled = name.length === 0;
+                    // Button is always enabled - name is optional
                 });
 
                 this.playerNameInputMain.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !this.startGameBtn.disabled) {
+                    if (e.key === 'Enter') {
                         this.startGameFromNameInput();
                     }
                 });
@@ -1687,77 +1976,20 @@
                     this.startGameFromNameInput();
                 });
 
+                // Skip button - start game as guest
+                const skipNameBtn = document.getElementById('skipNameBtn');
+                if (skipNameBtn) {
+                    skipNameBtn.addEventListener('click', () => {
+                        this.playerNameInputMain.value = ''; // Clear any input
+                        this.startGameFromNameInput(); // Will use "Guest" as default
+                    });
+                }
+
                 this.settingsBtnMain.addEventListener('click', () => {
                     this.showSettings();
                 });
 
-                // Level editor controls
-                if (this.editorModeSelect) {
-                    this.editorModeSelect.addEventListener('change', (e) => {
-                        this.editorMode = e.target.value;
-                    });
-                }
-
-                if (this.saveLevelBtn) {
-                    this.saveLevelBtn.addEventListener('click', () => {
-                        this.saveLevel();
-                    });
-                }
-
-                if (this.loadLevelBtn) {
-                    this.loadLevelBtn.addEventListener('click', () => {
-                        this.loadLevel();
-                    });
-                }
-
-                if (this.closeEditorBtn) {
-                    this.closeEditorBtn.addEventListener('click', () => {
-                        this.closeLevelEditor();
-                    });
-                }
-
-                // Multiplayer controls
-                if (this.createRoomBtn) {
-                    this.createRoomBtn.addEventListener('click', () => {
-                        this.createMultiplayerRoom();
-                    });
-                }
-
-                if (this.joinRoomBtn) {
-                    this.joinRoomBtn.addEventListener('click', () => {
-                        this.joinMultiplayerRoom();
-                    });
-                }
-
-                if (this.closeMultiplayerBtn) {
-                    this.closeMultiplayerBtn.addEventListener('click', () => {
-                        this.closeMultiplayerMenu();
-                    });
-                }
-
-                // Level editor toggle (E key) and Multiplayer (M key)
-                document.addEventListener('keydown', (e) => {
-                    if (e.code === 'KeyE' && this.gameState === 'playing') {
-                        this.toggleLevelEditor();
-                    }
-                    // Allow M key from any state
-                    if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('M key pressed, opening multiplayer menu');
-                        this.showMultiplayerMenu();
-                    }
-                }, true); // Use capture phase to catch the event early
-
-                // Canvas click for level editor
-                this.canvas.addEventListener('click', (e) => {
-                    if (this.levelEditorActive) {
-                        const rect = this.canvas.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        this.placeEditorItem(x, y);
-                    }
-                });
+                // Level editor and multiplayer features removed for production
             }
 
             startGame() {
@@ -1801,13 +2033,12 @@
 
             startGameFromNameInput() {
                 const name = this.playerNameInputMain.value.trim();
-                if (name.length > 0) {
-                    this.playerName = name;
-                    this.saveSettings();
-                    this.hideNameInputScreen();
-                    this.gameState = 'waiting';
-                    this.instructionsElement.style.display = 'block';
-                }
+                // Use provided name or default to "Guest"
+                this.playerName = name.length > 0 ? name : 'Guest';
+                this.saveSettings();
+                this.hideNameInputScreen();
+                this.gameState = 'waiting';
+                this.instructionsElement.style.display = 'block';
             }
 
             showNameInputScreen() {
@@ -1834,6 +2065,23 @@
                         return;
                     }
                     this.robot.velocity = this.jumpForce;
+
+                    // GAME JUICE - Screen shake on jump for satisfying feedback
+                    this.screenShake.intensity = 3;
+
+                    // GAME JUICE - Create particle effects on jump
+                    for (let i = 0; i < 5; i++) {
+                        this.jumpParticles.push({
+                            x: this.robot.x,
+                            y: this.robot.y + this.robot.height / 2,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: Math.random() * 2 + 1,
+                            life: 20,
+                            alpha: 1,
+                            color: `hsl(${190 + Math.random() * 20}, 80%, 60%)`
+                        });
+                    }
+
                     if (typeof this.playSound === 'function') {
                         this.playSound('jump');
                     }
@@ -1932,11 +2180,30 @@
                 this.achievementStats.playTime = (this.achievementStats.playTime || 0) + 16; // Assuming 60fps
                 this.checkStatAchievements();
 
-                // Update robot
+                // Update robot with terminal velocity (Flappy Bird style physics)
                 this.robot.velocity += this.gravity;
+                // Apply terminal velocity for better control
+                this.robot.velocity = Math.min(this.robot.velocity, this.terminalVelocity);
                 this.robot.y += this.robot.velocity;
                 this.robot.rotation = Math.min(Math.max(this.robot.velocity * 3, -30), 30);
                 this.robot.eyeGlow = Math.sin(Date.now() * 0.01) * 0.5 + 0.5; // Animate robot eyes
+
+                // Update screen shake
+                if (this.screenShake.intensity > 0) {
+                    this.screenShake.x = (Math.random() - 0.5) * this.screenShake.intensity;
+                    this.screenShake.y = (Math.random() - 0.5) * this.screenShake.intensity;
+                    this.screenShake.intensity *= 0.9; // Decay
+                }
+
+                // Update jump particles
+                this.jumpParticles = this.jumpParticles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3; // Gravity on particles
+                    p.life -= 1;
+                    p.alpha = p.life / 20;
+                    return p.life > 0;
+                });
 
                 // Update clouds
                 this.clouds.forEach(cloud => {
@@ -2028,19 +2295,26 @@
                 if (newLevel > this.level) {
                     this.level = newLevel;
                     this.levelElement.textContent = `Level ${this.level}`;
-                    
-                    // Increase difficulty
-                    this.obstacleSpeed = this.baseObstacleSpeed + (this.level - 1) * 0.8;
-                    this.obstacleInterval = Math.max(1500, 2500 - (this.level - 1) * 200);
-                    
+
+                    // IMPROVED DIFFICULTY CURVE - Flappy Bird style progression
+                    // Speed increases more aggressively but smoothly
+                    this.obstacleSpeed = this.baseObstacleSpeed + (this.level - 1) * 1.2; // Was 0.8
+                    // Obstacles spawn faster
+                    this.obstacleInterval = Math.max(1200, 2500 - (this.level - 1) * 250); // Was 1500/200
+
+                    // Dynamic gap sizing - gradually shrinks but stays fair
+                    const gapReduction = Math.min((this.level - 1) * 5, this.baseObstacleGap - this.minObstacleGap);
+                    this.obstacleGap = this.baseObstacleGap - gapReduction;
+
                     // Update music intensity
                     this.updateMusicIntensity();
-                    
+
                     // Check level achievements
                     this.checkLevelAchievements();
-                    
-                    // Visual feedback for level up
+
+                    // Visual feedback for level up with screen shake
                     this.showLevelUpEffect();
+                    this.screenShake.intensity = 8; // Screen shake on level up!
                 }
             }
 
@@ -2510,6 +2784,8 @@
                 this.activateInvincibility();
                 this.showShieldEffect();
                 this.playSound('shield');
+                // GAME JUICE - Screen shake when shield is used (collision)
+                this.screenShake.intensity = 6;
                 this.checkStatAchievements();
             }
             
@@ -3610,17 +3886,17 @@
                 //     this.lastMagnetTime = now;
                 // }
                 
-                // Generate freezes
-                if (now - this.lastFreezeTime > this.freezeInterval) {
-                    this.createFreeze();
-                    this.lastFreezeTime = now;
-                }
-                
-                // Generate double points
-                if (now - this.lastDoublePointsTime > this.doublePointsInterval) {
-                    this.createDoublePoints();
-                    this.lastDoublePointsTime = now;
-                }
+                // SIMPLIFIED POWER-UP SYSTEM - Freeze and Double Points DISABLED for cleaner gameplay
+                // Too many power-ups clutter the experience and reduce focus on core mechanics
+                // if (now - this.lastFreezeTime > this.freezeInterval) {
+                //     this.createFreeze();
+                //     this.lastFreezeTime = now;
+                // }
+
+                // if (now - this.lastDoublePointsTime > this.doublePointsInterval) {
+                //     this.createDoublePoints();
+                //     this.lastDoublePointsTime = now;
+                // }
             }
 
             createCoin() {
@@ -4488,6 +4764,10 @@
                 // Clear canvas
                 this.ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
 
+                // GAME JUICE - Apply screen shake
+                this.ctx.save();
+                this.ctx.translate(this.screenShake.x, this.screenShake.y);
+
                 // Draw background gradient based on current theme
                 this.drawBackground();
 
@@ -4521,9 +4801,22 @@
                 // Draw oil cans
                 this.drawOilCans();
 
+                // GAME JUICE - Draw jump particles
+                this.jumpParticles.forEach(p => {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                });
 
                 // Draw robot
                 this.drawRobot();
+
+                // Restore context after screen shake
+                this.ctx.restore();
             }
 
             drawBackground() {
@@ -4957,19 +5250,30 @@
             }
 
 
-            gameLoop() {
+            gameLoop(timestamp) {
+                // Calculate delta time for smooth animation
+                if (!this.lastFrameTime) this.lastFrameTime = timestamp;
+                const deltaTime = timestamp - this.lastFrameTime;
+                this.lastFrameTime = timestamp;
+
+                // Skip frame if delta time is too large (tab switching, etc.)
+                if (deltaTime > 100) {
+                    requestAnimationFrame((t) => this.gameLoop(t));
+                    return;
+                }
+
                 this.update();
                 this.draw();
                 this.updateMusic();
-                
+
                 // Auto-save every 30 seconds
                 const now = Date.now();
                 if (now - this.lastAutoSaveTime > this.autoSaveInterval) {
                     this.autoSave();
                     this.lastAutoSaveTime = now;
                 }
-                
-                requestAnimationFrame(() => this.gameLoop());
+
+                requestAnimationFrame((t) => this.gameLoop(t));
             }
 
             // Audio System
