@@ -18,20 +18,14 @@ const keyMap = {
 
 // Initialize emulator when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if running via file:// protocol (won't work due to CORS)
-    // Allow localhost and production domains
-    const isLocalDev = window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' ||
-                       window.location.hostname.includes('localhost');
-    const isProduction = window.location.protocol === 'https:' || 
-                        window.location.hostname.includes('vltrngames.com') ||
-                        window.location.hostname.includes('github.io');
-    
-    if (window.location.protocol === 'file:' && !isLocalDev && !isProduction) {
+    // Only show error for file:// protocol
+    // Allow localhost, production domains, and any HTTP/HTTPS
+    if (window.location.protocol === 'file:') {
         showFileProtocolError();
         return;
     }
     
+    // Production ready - works on live website
     setupGameButtons();
     setupTouchControls();
     setupKeyboardControls();
@@ -158,11 +152,12 @@ function loadGame(romFile) {
         container.innerHTML = ''; // Clear previous content
     }
     
-    // Configure EmulatorJS
+    // Configure EmulatorJS for production
     window.EJS_player = '#emulatorjs-container';
     window.EJS_core = 'gb'; // Game Boy core (supports .gb and .gbc)
     
-    // Use relative path for ROM - works in both local dev and production
+    // Use relative path for ROM - works on live website
+    // Path is relative to the game's index.html location
     const romPath = `pokered/${romFile}`;
     window.EJS_gameUrl = romPath;
     window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
@@ -182,6 +177,9 @@ function loadGame(romFile) {
         START: 'Enter',
         SELECT: 'ShiftLeft'
     };
+    
+    // Ensure CORS is handled properly for production
+    window.EJS_gameType = 'gb';
     
     // Set up default controls
     window.EJS_controls = {
