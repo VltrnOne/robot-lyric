@@ -94,22 +94,22 @@ function loadEmulatorJS() {
         loading.textContent = 'Loading EmulatorJS...';
     }
     
-    // Get absolute URL for ROM file
-    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
-    const romUrl = `${baseUrl}/pokered/pokered.gbc`;
+    // Use relative path for ROM file - works better in production
+    // The path is relative to the game's index.html location
+    const romUrl = 'pokered/pokered.gbc';
     
     console.log('Loading ROM from:', romUrl);
+    console.log('Current location:', window.location.href);
     
     // Configure EmulatorJS - set ALL variables BEFORE loading script
     window.EJS_player = '#emulatorjs-container';
     window.EJS_core = 'gb';
-    window.EJS_gameUrl = romUrl; // Use absolute URL
+    window.EJS_gameUrl = romUrl; // Use relative path
     window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     window.EJS_color = '#667eea';
     window.EJS_startOnLoaded = true;
     window.EJS_fullscreenOnLoaded = false;
     window.EJS_gameName = 'Pokemon Red';
-    window.EJS_gameParent = baseUrl;
     window.EJS_gameType = 'gb';
     
     // Load EmulatorJS script from CDN
