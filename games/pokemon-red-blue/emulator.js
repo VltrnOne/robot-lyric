@@ -94,17 +94,19 @@ function loadEmulatorJS() {
         loading.textContent = 'Loading EmulatorJS...';
     }
     
-    // Use relative path for ROM file - works better in production
-    // The path is relative to the game's index.html location
-    const romUrl = 'pokered/pokered.gbc';
+    // Build absolute URL for ROM file
+    // EmulatorJS may need absolute URLs to work properly
+    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+    const romUrl = `${baseUrl}/pokered/pokered.gbc`;
     
     console.log('Loading ROM from:', romUrl);
     console.log('Current location:', window.location.href);
+    console.log('Base URL:', baseUrl);
     
     // Configure EmulatorJS - set ALL variables BEFORE loading script
     window.EJS_player = '#emulatorjs-container';
     window.EJS_core = 'gb';
-    window.EJS_gameUrl = romUrl; // Use relative path
+    window.EJS_gameUrl = romUrl; // Use absolute URL
     window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     window.EJS_color = '#667eea';
     window.EJS_startOnLoaded = true;
@@ -219,11 +221,13 @@ function loadGame(romFile) {
         loading.style.display = 'block';
     }
     
-    // Use relative path for ROM file - works better in production
-    const romUrl = `pokered/${romFile}`;
+    // Build absolute URL for ROM file
+    const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+    const romUrl = `${baseUrl}/pokered/${romFile}`;
     
     console.log('Loading ROM from:', romUrl);
     console.log('Current location:', window.location.href);
+    console.log('Base URL:', baseUrl);
     
     // Verify ROM file is accessible before loading
     fetch(romUrl, { method: 'HEAD' })
