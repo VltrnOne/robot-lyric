@@ -198,7 +198,7 @@ function loadGame(romFile) {
     }
     
     // Update EmulatorJS configuration
-    window.EJS_gameUrl = romUrl; // Use absolute URL
+    window.EJS_gameUrl = romUrl; // Use relative path
     window.EJS_gameName = romFile.replace('.gbc', '').replace('.gb', '');
     
     // Remove old script
