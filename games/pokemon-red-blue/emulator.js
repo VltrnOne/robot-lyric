@@ -87,6 +87,7 @@ function loadEmulatorJS() {
         container.style.display = 'block';
         container.style.width = '100%';
         container.style.height = '100%';
+        container.style.minHeight = '400px';
     }
     
     // Show loading message
@@ -104,43 +105,40 @@ function loadEmulatorJS() {
     window.EJS_startOnLoaded = true;
     window.EJS_fullscreenOnLoaded = false;
     window.EJS_gameName = 'Pokemon Red';
+    window.EJS_gameParent = window.location.href.split('/').slice(0, -1).join('/');
     
     // Load EmulatorJS script from CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
     script.crossOrigin = 'anonymous';
     script.async = true;
+    script.defer = false;
     
     script.onload = () => {
         emulatorLoaded = true;
         console.log('EmulatorJS script loaded');
         
-        // Wait a bit for EmulatorJS to initialize
-        setTimeout(() => {
-            console.log('Checking EmulatorJS initialization...');
+        // Wait for EmulatorJS to initialize
+        let checkCount = 0;
+        const maxChecks = 20;
+        
+        const checkInitialization = setInterval(() => {
+            checkCount++;
+            console.log(`Checking EmulatorJS initialization (${checkCount}/${maxChecks})...`);
             
-            // Check if EmulatorJS initialized
-            if (window.EJS_player && container) {
-                // Check if container has content
-                if (container.children.length > 0 || container.innerHTML.trim() !== '') {
-                    console.log('EmulatorJS initialized successfully');
-                    if (loading) {
-                        loading.style.display = 'none';
-                    }
-                } else {
-                    console.warn('EmulatorJS loaded but container is empty');
-                    // Try waiting a bit more
-                    setTimeout(() => {
-                        if (loading) {
-                            loading.style.display = 'none';
-                        }
-                    }, 2000);
+            // Check if container has content (iframe or canvas)
+            if (container && (container.children.length > 0 || container.querySelector('iframe') || container.querySelector('canvas'))) {
+                console.log('EmulatorJS initialized successfully!');
+                clearInterval(checkInitialization);
+                if (loading) {
+                    loading.style.display = 'none';
                 }
-            } else {
-                console.error('EmulatorJS failed to initialize');
-                showError('EmulatorJS loaded but failed to initialize. Please refresh the page.');
+            } else if (checkCount >= maxChecks) {
+                console.error('EmulatorJS failed to initialize after waiting');
+                clearInterval(checkInitialization);
+                showError('EmulatorJS loaded but failed to initialize. The ROM file may not be accessible. Please check the browser console for details.');
             }
-        }, 1500);
+        }, 500);
     };
     
     script.onerror = () => {
